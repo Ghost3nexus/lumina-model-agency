@@ -1,0 +1,12 @@
+.git-old
+training
+test/agency-models-backup
+test/portfolio-backup-v2
+test/fidelity-ab-output
+test/multi-ref-output
+test/generation-output
+test/creative-output
+test/bedwin-demo
+test/kontext-output
+test/model-comparison
+test/face-poc
