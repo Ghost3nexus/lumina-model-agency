@@ -117,8 +117,11 @@ export default function LoginPage() {
           )}
         </p>
 
-        {/* Agency link */}
-        <div className="text-center mt-8">
+        {/* Links */}
+        <div className="text-center mt-8 flex flex-col gap-2">
+          <a href="/pricing" className="text-xs text-cyan-500 hover:text-cyan-400 transition-colors">
+            View Plans & Pricing →
+          </a>
           <a href="/agency" className="text-xs text-gray-600 hover:text-gray-400 transition-colors">
             View Model Agency →
           </a>

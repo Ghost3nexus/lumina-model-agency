@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import GenerationPage from './pages/GenerationPage';
 import AgencyPage from './pages/AgencyPage';
 import LoginPage from './pages/LoginPage';
+import PricingPage from './pages/PricingPage';
 
 // ─── Error Boundary ──────────────────────────────────────────────────────────
 
@@ -78,6 +79,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<ProtectedRoute><GenerationPage /></ProtectedRoute>} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
             <Route path="/agency" element={<AgencyPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
