@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { useGenerationFlow } from '../hooks/useGenerationFlow';
 import { useGarmentUpload } from '../hooks/useGarmentUpload';
 import { StepTabs } from '../components/generation/StepTabs';
@@ -29,6 +30,7 @@ const API_KEY_STORAGE_KEY = 'lumina_gemini_api_key';
 export default function GenerationPage() {
   // ── Hooks ──────────────────────────────────────────────────────────────────
 
+  const { user, signOut } = useAuth();
   const { state, actions } = useGenerationFlow();
   const {
     state: uploadState,
@@ -124,6 +126,9 @@ export default function GenerationPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          {user && (
+            <span className="text-xs text-gray-600 hidden md:inline">{user.email}</span>
+          )}
           <a
             href="/agency"
             className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider"
@@ -136,6 +141,13 @@ export default function GenerationPage() {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-900 text-gray-400 text-xs font-medium hover:border-gray-600 hover:text-gray-200 transition-colors duration-200"
           >
             API Key
+          </button>
+          <button
+            type="button"
+            onClick={signOut}
+            className="px-3 py-1.5 rounded-lg border border-gray-800 text-gray-600 text-xs hover:text-gray-400 hover:border-gray-700 transition-colors duration-200"
+          >
+            Logout
           </button>
         </div>
       </header>

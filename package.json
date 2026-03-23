@@ -12,6 +12,7 @@
     "@google/genai": "^1.39.0",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
+    "@supabase/supabase-js": "^2.99.3",
     "jszip": "^3.10.1",
     "lucide-react": "^0.563.0",
     "react": "^19.0.0",

@@ -1,7 +1,9 @@
 import { Component, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import GenerationPage from './pages/GenerationPage';
 import AgencyPage from './pages/AgencyPage';
+import LoginPage from './pages/LoginPage';
 
 // ─── Error Boundary ──────────────────────────────────────────────────────────
 
@@ -40,18 +42,47 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   }
 }
 
+// ─── Protected Route ─────────────────────────────────────────────────────────
+
+function ProtectedRoute({ children }: { children: ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="h-screen bg-[#050508] text-gray-100 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <svg className="w-6 h-6 animate-spin text-cyan-500" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+            <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+          </svg>
+          <span className="text-sm text-gray-500">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  return <>{children}</>;
+}
+
 // ─── App ─────────────────────────────────────────────────────────────────────
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<GenerationPage />} />
-          <Route path="/agency" element={<AgencyPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<ProtectedRoute><GenerationPage /></ProtectedRoute>} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/agency" element={<AgencyPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </ErrorBoundary>
   );
 }
