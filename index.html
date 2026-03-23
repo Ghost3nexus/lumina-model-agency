@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lumina Fashion Studio 3D</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            studio: {
+              900: '#0f0f11',
+              800: '#18181b',
+              700: '#27272a',
+              600: '#52525b',
+              accent: '#8b5cf6'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Text Overlay Editor fonts — fashion brand typography presets -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Josefin+Sans:wght@300;400;600&family=Barlow+Condensed:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      /* ═══ SURFACES (4-tier elevation) ═══ */
+      --surface-base: #0f0f11;
+      --surface-canvas: #0a0a0c;
+      --surface-panel: #16161a;
+      --surface-elevated: #1e1e23;
+      --surface-overlay: #27272d;
+
+      /* ═══ TEXT (3-tier rgba hierarchy) ═══ */
+      --text-primary: rgba(255, 255, 255, 0.87);
+      --text-secondary: rgba(255, 255, 255, 0.60);
+      --text-tertiary: rgba(255, 255, 255, 0.38);
+
+      /* ═══ ACCENT (violet with desaturated variant) ═══ */
+      --accent: #8b5cf6;
+      --accent-hover: #7c3aed;
+      --accent-muted: #a78bfa;
+      --accent-subtle: rgba(139, 92, 246, 0.12);
+      --accent-glow: rgba(139, 92, 246, 0.15);
+
+      /* ═══ SEMANTIC ═══ */
+      --success: #34d399;
+      --warning: #fbbf24;
+      --error: #f87171;
+
+      /* ═══ BORDERS ═══ */
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.10);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --border-focus: var(--accent);
+
+      /* ═══ RADIUS (2025 trend: larger) ═══ */
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 16px;
+      --radius-2xl: 24px;
+
+      /* ═══ SHADOWS ═══ */
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+      --shadow-glow: 0 0 20px var(--accent-glow);
+
+      /* ═══ GLASS (Apple Liquid Glass inspired) ═══ */
+      --glass-bg: rgba(22, 22, 26, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-blur: blur(16px) saturate(150%);
+
+      /* ═══ MOTION (industry standard) ═══ */
+      --duration-fast: 150ms;
+      --duration-normal: 200ms;
+      --duration-moderate: 300ms;
+      --duration-slow: 400ms;
+      --ease-out: cubic-bezier(0, 0, 0.2, 1);
+      --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+      --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+
+      /* ═══ LAYOUT ═══ */
+      --panel-left: 340px;
+      --panel-right: 300px;
+      --toolbar-height: 40px;
+      --filmstrip-height: 52px;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--surface-base);
+      color: var(--text-primary);
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* ═══ UTILITY CLASSES ═══ */
+
+    /* Glass panel */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+    }
+
+    /* Skeleton loading */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface-panel) 25%, var(--surface-elevated) 37%, var(--surface-panel) 63%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s ease-in-out infinite;
+      border-radius: var(--radius-md);
+    }
+
+    /* Result card interaction */
+    .result-card {
+      transition: transform var(--duration-normal) var(--ease-out),
+        box-shadow var(--duration-normal) var(--ease-out),
+        border-color var(--duration-normal) var(--ease-out);
+    }
+
+    .result-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Kbd styling */
+    kbd {
+      font-family: 'Inter', monospace;
+      font-size: 9px;
+      font-weight: 500;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: var(--surface-overlay);
+      border: 1px solid var(--border-default);
+      color: var(--text-tertiary);
+    }
+
+    /* Loading Animation Keyframes */
+    @keyframes gradient-x {
+
+      0%,
+      100% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    @keyframes fade-in {
+      0% {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0px) translateX(0px);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.3;
+      }
+
+      50% {
+        transform: translateY(-100px) translateX(20px);
+        opacity: 0.6;
+      }
+
+      90% {
+        opacity: 0.3;
+      }
+    }
+
+    .animate-gradient-x {
+      animation: gradient-x 3s ease infinite;
+    }
+
+    .animate-shimmer {
+      animation: shimmer 2s infinite;
+    }
+
+    .animate-fade-in {
+      animation: fade-in 0.5s ease-out;
+    }
+
+    .animate-float {
+      animation: float 10s ease-in-out infinite;
+    }
+
+    /* Panel collapse transitions */
+    .panel-transition {
+      transition: width 300ms cubic-bezier(0.4, 0, 0.2, 1),
+        min-width 300ms cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 200ms ease;
+    }
+
+    .panel-collapsed {
+      width: 0 !important;
+      min-width: 0 !important;
+      opacity: 0;
+      overflow: hidden;
+    }
+
+    /* Filmstrip */
+    .filmstrip-scroll {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .filmstrip-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Panel toggle button (glass effect) */
+    .panel-toggle {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 20;
+      width: 20px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      color: var(--text-tertiary);
+      cursor: pointer;
+      transition: all var(--duration-normal) var(--ease-out);
+    }
+
+    .panel-toggle:hover {
+      color: var(--text-primary);
+      background: var(--surface-overlay);
+      border-color: var(--border-default);
+    }
+
+    .panel-toggle-left {
+      left: 0;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      border-left: none;
+    }
+
+    .panel-toggle-right {
+      right: 0;
+      border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+      border-right: none;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>

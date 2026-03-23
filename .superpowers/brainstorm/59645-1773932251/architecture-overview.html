@@ -1,0 +1,132 @@
+<h2>Lumina Studio — アーキテクチャ設計</h2>
+<p class="subtitle">botika式フロー × Geminiエンジン × クリーンアーキテクチャ</p>
+
+<div class="section">
+  <h3>ユーザーフロー</h3>
+  <div class="mockup">
+    <div class="mockup-header">Core User Flow</div>
+    <div class="mockup-body" style="padding: 24px;">
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div style="background: #1a1a2e; border: 2px solid #00D4FF; border-radius: 12px; padding: 16px 20px; text-align: center; min-width: 140px;">
+          <div style="font-size: 24px; margin-bottom: 4px;">📸</div>
+          <div style="font-weight: 600; color: #FAFAFA;">1. 商品画像アップ</div>
+          <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">ドラッグ&ドロップ</div>
+        </div>
+        <div style="color: #00D4FF; font-size: 24px;">→</div>
+        <div style="background: #1a1a2e; border: 2px solid #00D4FF; border-radius: 12px; padding: 16px 20px; text-align: center; min-width: 140px;">
+          <div style="font-size: 24px; margin-bottom: 4px;">👤</div>
+          <div style="font-weight: 600; color: #FAFAFA;">2. モデル選択</div>
+          <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">Roster から選ぶ</div>
+        </div>
+        <div style="color: #00D4FF; font-size: 24px;">→</div>
+        <div style="background: #1a1a2e; border: 2px solid #00D4FF; border-radius: 12px; padding: 16px 20px; text-align: center; min-width: 140px;">
+          <div style="font-size: 24px; margin-bottom: 4px;">🎯</div>
+          <div style="font-weight: 600; color: #FAFAFA;">3. 設定</div>
+          <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">ポーズ / 白背景</div>
+        </div>
+        <div style="color: #00D4FF; font-size: 24px;">→</div>
+        <div style="background: #1a1a2e; border: 2px solid #00FF88; border-radius: 12px; padding: 16px 20px; text-align: center; min-width: 140px;">
+          <div style="font-size: 24px; margin-bottom: 4px;">⚡</div>
+          <div style="font-weight: 600; color: #FAFAFA;">4. 一括生成</div>
+          <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">Front/Back/Side/Bust</div>
+        </div>
+        <div style="color: #00D4FF; font-size: 24px;">→</div>
+        <div style="background: #1a1a2e; border: 2px solid #FFB800; border-radius: 12px; padding: 16px 20px; text-align: center; min-width: 140px;">
+          <div style="font-size: 24px; margin-bottom: 4px;">📥</div>
+          <div style="font-weight: 600; color: #FAFAFA;">5. ダウンロード</div>
+          <div style="font-size: 12px; color: #6B7280; margin-top: 4px;">一括 or 個別</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>コード構造（リファクタリング後）</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">現状（問題）</div>
+      <div class="mockup-body" style="padding: 16px; font-family: monospace; font-size: 13px; line-height: 1.8;">
+        <div style="color: #FF3366;">services/geminiService.ts — 3,000行</div>
+        <div style="color: #6B7280; padding-left: 16px;">分析 + 生成 + 品質チェック + 編集 + 設定…全部入り</div>
+        <div style="color: #FF3366; margin-top: 8px;">pages/NewGenerationPage.tsx — 1,200行</div>
+        <div style="color: #6B7280; padding-left: 16px;">20+ useState, UI + ロジック + API呼び出し混在</div>
+        <div style="color: #FF3366; margin-top: 8px;">types.ts — 930行</div>
+        <div style="color: #6B7280; padding-left: 16px;">全型定義が1ファイル</div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">リファクタリング後</div>
+      <div class="mockup-body" style="padding: 16px; font-family: monospace; font-size: 13px; line-height: 1.8;">
+        <div style="color: #00FF88;">services/</div>
+        <div style="color: #FAFAFA; padding-left: 16px;">garmentAnalyzer.ts <span style="color:#6B7280">— 商品画像分析</span></div>
+        <div style="color: #FAFAFA; padding-left: 16px;">imageGenerator.ts <span style="color:#6B7280">— Gemini生成</span></div>
+        <div style="color: #FAFAFA; padding-left: 16px;">qualityChecker.ts <span style="color:#6B7280">— QAスコアリング</span></div>
+        <div style="color: #FAFAFA; padding-left: 16px;">imageEditor.ts <span style="color:#6B7280">— スタイル編集</span></div>
+        <div style="color: #00FF88; margin-top: 8px;">hooks/</div>
+        <div style="color: #FAFAFA; padding-left: 16px;">useGenerationFlow.ts <span style="color:#6B7280">— 生成ステート管理</span></div>
+        <div style="color: #FAFAFA; padding-left: 16px;">useGarmentUpload.ts <span style="color:#6B7280">— アップロード</span></div>
+        <div style="color: #00FF88; margin-top: 8px;">types/</div>
+        <div style="color: #FAFAFA; padding-left: 16px;">garment.ts / model.ts / generation.ts</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>生成パイプライン</h3>
+  <div class="mockup">
+    <div class="mockup-header">Gemini Multi-Angle Pipeline</div>
+    <div class="mockup-body" style="padding: 24px;">
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; padding: 12px 16px; flex: 1;">
+            <span style="color: #00D4FF; font-weight: 600;">Step 1: Analyze</span>
+            <span style="color: #6B7280;"> — 商品画像をGemini Flashで分析（カテゴリ、色、素材、ディテール）</span>
+          </div>
+        </div>
+        <div style="text-align: center; color: #00D4FF;">↓</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; padding: 12px 16px; flex: 1;">
+            <span style="color: #00D4FF; font-weight: 600;">Step 2: Generate Front</span>
+            <span style="color: #6B7280;"> — Gemini 3 Pro Image で正面着用画像生成（アンカー）</span>
+          </div>
+        </div>
+        <div style="text-align: center; color: #00D4FF;">↓</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; padding: 12px 16px; flex: 1;">
+            <span style="color: #00D4FF; font-weight: 600;">Step 3: Generate Back / Side / Bust</span>
+            <span style="color: #6B7280;"> — Front画像をアンカーにして同一モデルで各アングル生成</span>
+          </div>
+        </div>
+        <div style="text-align: center; color: #00D4FF;">↓</div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; padding: 12px 16px; flex: 1;">
+            <span style="color: #00FF88; font-weight: 600;">Step 4: Quality Check</span>
+            <span style="color: #6B7280;"> — 各画像をスコアリング。85点未満は自動リトライ</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>この設計でOK？</h3>
+  <div class="options">
+    <div class="option" data-choice="approve" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>OK、この方向で進めよう</h3>
+        <p>フロー・アーキテクチャ・パイプラインとも問題なし</p>
+      </div>
+    </div>
+    <div class="option" data-choice="adjust" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>方向はOKだけど調整したい部分がある</h3>
+        <p>ターミナルでフィードバック教えて</p>
+      </div>
+    </div>
+  </div>
+</div>

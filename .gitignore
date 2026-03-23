@@ -1,0 +1,29 @@
+
+.git-old/
+node_modules
+dist
+dist-ssr
+*.local
+.vscode
+.DS_Store
+.env
+.env.production
+.vercel
+public/models/backup/
+.env*.local
+
+# Training data (4GB+)
+training/
+
+# Test output & backups (large image files)
+test/agency-models-backup/
+test/portfolio-backup-v2/
+test/fidelity-ab-output/
+test/multi-ref-output/
+test/generation-output/
+test/creative-output/
+test/bedwin-demo/
+test/kontext-output/
+test/model-comparison/
+test/face-poc/
+test/*.log

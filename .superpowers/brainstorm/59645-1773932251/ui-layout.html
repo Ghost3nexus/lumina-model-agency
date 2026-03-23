@@ -1,0 +1,126 @@
+<h2>UI レイアウト — 画面構成</h2>
+<p class="subtitle">botika式のシンプルな3ステップUI。プロンプト不要。</p>
+
+<div class="section">
+  <h3>画面構成案</h3>
+  <div class="cards">
+    <div class="card" data-choice="3col" onclick="toggleSelect(this)">
+      <div class="card-image">
+        <div style="padding: 16px;">
+          <div style="display: flex; gap: 8px; height: 280px;">
+            <!-- Left Panel -->
+            <div style="width: 240px; background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; padding: 12px; flex-shrink: 0;">
+              <div style="font-size: 11px; color: #00D4FF; font-weight: 600; margin-bottom: 8px;">WORKFLOW</div>
+              <!-- Steps -->
+              <div style="background: #1a1a2e; border: 1px solid #00D4FF; border-radius: 6px; padding: 8px; margin-bottom: 6px;">
+                <div style="font-size: 11px; color: #FAFAFA; font-weight: 600;">1. 商品画像</div>
+              </div>
+              <div style="background: #1a1a2e; border: 1px solid #333; border-radius: 6px; padding: 8px; margin-bottom: 6px;">
+                <div style="font-size: 11px; color: #6B7280;">2. モデル選択</div>
+              </div>
+              <div style="background: #1a1a2e; border: 1px solid #333; border-radius: 6px; padding: 8px; margin-bottom: 6px;">
+                <div style="font-size: 11px; color: #6B7280;">3. 設定</div>
+              </div>
+              <!-- Upload area -->
+              <div style="border: 2px dashed #333; border-radius: 8px; height: 100px; display: flex; align-items: center; justify-content: center; margin-top: 12px;">
+                <div style="text-align: center;">
+                  <div style="font-size: 20px;">📸</div>
+                  <div style="font-size: 10px; color: #6B7280;">ドラッグ&ドロップ</div>
+                </div>
+              </div>
+            </div>
+            <!-- Center Canvas -->
+            <div style="flex: 1; background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+              <div style="text-align: center; color: #6B7280;">
+                <div style="font-size: 32px; margin-bottom: 8px;">🖼️</div>
+                <div style="font-size: 12px;">生成結果プレビュー</div>
+                <div style="font-size: 10px; margin-top: 4px;">Front / Back / Side / Bust</div>
+              </div>
+            </div>
+            <!-- Right Panel -->
+            <div style="width: 200px; background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; padding: 12px; flex-shrink: 0;">
+              <div style="font-size: 11px; color: #00D4FF; font-weight: 600; margin-bottom: 8px;">GENERATION QUEUE</div>
+              <div style="background: #1a1a2e; border-radius: 6px; padding: 8px; margin-bottom: 6px;">
+                <div style="font-size: 10px; color: #FAFAFA;">正面 Front</div>
+                <div style="background: #00FF88; height: 3px; border-radius: 2px; margin-top: 4px;"></div>
+              </div>
+              <div style="background: #1a1a2e; border-radius: 6px; padding: 8px; margin-bottom: 6px;">
+                <div style="font-size: 10px; color: #FAFAFA;">背面 Back</div>
+                <div style="background: #333; height: 3px; border-radius: 2px; margin-top: 4px;"></div>
+              </div>
+              <div style="background: #1a1a2e; border-radius: 6px; padding: 8px; margin-bottom: 6px;">
+                <div style="font-size: 10px; color: #FAFAFA;">横 Side</div>
+                <div style="background: #333; height: 3px; border-radius: 2px; margin-top: 4px;"></div>
+              </div>
+              <div style="background: #1a1a2e; border-radius: 6px; padding: 8px;">
+                <div style="font-size: 10px; color: #FAFAFA;">バストアップ</div>
+                <div style="background: #333; height: 3px; border-radius: 2px; margin-top: 4px;"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Bottom bar -->
+          <div style="margin-top: 8px; background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; padding: 8px 16px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size: 11px; color: #6B7280;">← Back</div>
+            <div style="background: #00D4FF; color: #050508; font-size: 11px; font-weight: 600; padding: 6px 20px; border-radius: 6px;">Generate ⚡</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3>A: 3カラム（現状ベース改良）</h3>
+        <p>左: ワークフロー + 入力<br>中央: プレビューキャンバス<br>右: 生成キュー</p>
+        <p style="color: #00FF88; font-size: 12px;">✓ 既存UIの延長で開発速い</p>
+      </div>
+    </div>
+
+    <div class="card" data-choice="2col" onclick="toggleSelect(this)">
+      <div class="card-image">
+        <div style="padding: 16px;">
+          <div style="display: flex; gap: 8px; height: 280px;">
+            <!-- Left: Step content -->
+            <div style="width: 340px; background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; padding: 16px; flex-shrink: 0;">
+              <div style="display: flex; gap: 4px; margin-bottom: 16px;">
+                <div style="background: #00D4FF; color: #050508; font-size: 10px; font-weight: 600; padding: 4px 12px; border-radius: 12px;">商品</div>
+                <div style="background: #1a1a2e; color: #6B7280; font-size: 10px; padding: 4px 12px; border-radius: 12px;">モデル</div>
+                <div style="background: #1a1a2e; color: #6B7280; font-size: 10px; padding: 4px 12px; border-radius: 12px;">設定</div>
+              </div>
+              <!-- Upload area large -->
+              <div style="border: 2px dashed #333; border-radius: 12px; height: 180px; display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center;">
+                  <div style="font-size: 36px;">📸</div>
+                  <div style="font-size: 12px; color: #6B7280; margin-top: 8px;">商品画像をドロップ</div>
+                  <div style="font-size: 10px; color: #333; margin-top: 4px;">PNG / JPG / WebP</div>
+                </div>
+              </div>
+              <div style="margin-top: 12px; text-align: right;">
+                <div style="display: inline-block; background: #00D4FF; color: #050508; font-size: 12px; font-weight: 600; padding: 8px 24px; border-radius: 8px;">Next →</div>
+              </div>
+            </div>
+            <!-- Right: Preview -->
+            <div style="flex: 1; background: #0A0A0F; border: 1px solid #1A1A2E; border-radius: 8px; padding: 16px;">
+              <div style="font-size: 11px; color: #00D4FF; font-weight: 600; margin-bottom: 12px;">PREVIEW</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div style="background: #1a1a2e; border-radius: 6px; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;">
+                  <div style="text-align: center; font-size: 10px; color: #6B7280;">Front</div>
+                </div>
+                <div style="background: #1a1a2e; border-radius: 6px; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;">
+                  <div style="text-align: center; font-size: 10px; color: #6B7280;">Back</div>
+                </div>
+                <div style="background: #1a1a2e; border-radius: 6px; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;">
+                  <div style="text-align: center; font-size: 10px; color: #6B7280;">Side</div>
+                </div>
+                <div style="background: #1a1a2e; border-radius: 6px; aspect-ratio: 3/4; display: flex; align-items: center; justify-content: center;">
+                  <div style="text-align: center; font-size: 10px; color: #6B7280;">Bust</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <h3>B: 2カラム（botika寄り）</h3>
+        <p>左: ステップ入力（タブ切り替え）<br>右: 4枚グリッドプレビュー</p>
+        <p style="color: #00D4FF; font-size: 12px;">✓ botika的シンプルさ。集中しやすい</p>
+      </div>
+    </div>
+  </div>
+</div>
