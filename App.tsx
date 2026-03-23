@@ -5,6 +5,9 @@ import GenerationPage from './pages/GenerationPage';
 import AgencyPage from './pages/AgencyPage';
 import LoginPage from './pages/LoginPage';
 import PricingPage from './pages/PricingPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import LegalPage from './pages/LegalPage';
 
 // ─── Error Boundary ──────────────────────────────────────────────────────────
 
@@ -80,6 +83,9 @@ export default function App() {
             <Route path="/" element={<ProtectedRoute><GenerationPage /></ProtectedRoute>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/legal" element={<LegalPage />} />
             <Route path="/agency" element={<AgencyPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

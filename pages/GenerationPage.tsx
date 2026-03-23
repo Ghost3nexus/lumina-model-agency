@@ -10,6 +10,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useUserPlan } from '../hooks/useUserPlan';
 import { useGenerationFlow } from '../hooks/useGenerationFlow';
 import { useGarmentUpload } from '../hooks/useGarmentUpload';
 import { StepTabs } from '../components/generation/StepTabs';
@@ -31,6 +32,7 @@ export default function GenerationPage() {
   // ── Hooks ──────────────────────────────────────────────────────────────────
 
   const { user, signOut } = useAuth();
+  const { userPlan, isModelAvailable } = useUserPlan();
   const { state, actions } = useGenerationFlow();
   const {
     state: uploadState,
@@ -229,6 +231,8 @@ export default function GenerationPage() {
               <ModelSelector
                 selectedModel={state.selectedModel}
                 onSelect={actions.setModel}
+                isModelAvailable={isModelAvailable}
+                plan={userPlan.plan}
               />
             )}
           </div>
