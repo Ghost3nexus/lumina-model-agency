@@ -47,7 +47,7 @@ function ModelDetail({ model, onClose }: { model: AgencyModel; onClose: () => vo
             <img
               src={model.images.polaroid}
               alt={model.name}
-              className="w-full aspect-[2/3] object-cover"
+              className="w-full aspect-[2/3] object-contain bg-gray-50"
             />
           </div>
 
@@ -129,7 +129,7 @@ function ModelCard({ model, viewMode, onClick }: { model: AgencyModel; viewMode:
         <img
           src={model.images.main}
           alt={model.name}
-          className={`w-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out ${
+          className={`w-full object-contain bg-gray-50 group-hover:scale-[1.03] transition-transform duration-700 ease-out ${
             viewMode === 'zoom' ? 'aspect-[3/4]' : 'aspect-[2/3]'
           }`}
           loading="lazy"
