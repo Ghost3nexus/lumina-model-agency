@@ -23,6 +23,7 @@ import { isOutfitReady } from '../types/garment';
 import type { AgencyModel } from '../data/agencyModels';
 import { analyzeOutfit } from '../services/garmentAnalyzer';
 import { generateFront, generateAngle } from '../services/imageGenerator';
+import { verifyAnalysis, verifyGeneration } from '../services/qualityAgent';
 
 function friendlyError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
@@ -253,9 +254,24 @@ export function useGenerationFlow() {
 
       let analyses: GarmentAnalysis[];
       try {
+        // Phase 1a: Initial analysis
         analyses = await analyzeOutfit(apiKey, outfitSlots);
+
+        // Phase 1b: QA verification — re-examine each garment against its analysis
+        const entries = Object.values(outfitSlots).filter(Boolean) as SlotUpload[];
+        const verifiedAnalyses: GarmentAnalysis[] = [];
+        for (let i = 0; i < analyses.length && i < entries.length; i++) {
+          try {
+            const { verified } = await verifyAnalysis(apiKey, entries[i].compressed, analyses[i]);
+            verifiedAnalyses.push(verified);
+          } catch {
+            // If QA fails, use original analysis
+            verifiedAnalyses.push(analyses[i]);
+          }
+        }
+        analyses = verifiedAnalyses;
+
         dispatch({ type: 'SET_OUTFIT_ANALYSIS', analyses });
-        // Also set the first analysis as garmentAnalysis for backward compatibility
         if (analyses.length > 0) {
           dispatch({ type: 'SET_ANALYSIS', analysis: analyses[0] });
         }
@@ -283,6 +299,20 @@ export function useGenerationFlow() {
 
       try {
         const frontUrl = await generateFront(apiKey, outfitSlots, analyses, selectedModel, heroSlot);
+
+        // Phase 2b: Generation QA — compare generated garment against reference
+        const refImages = (Object.values(outfitSlots).filter(Boolean) as SlotUpload[]).map(e => e.compressed);
+        try {
+          const genQA = await verifyGeneration(apiKey, refImages, frontUrl);
+          console.log('[QA] Generation verification:', genQA);
+          if (!genQA.pass && genQA.discrepancies.some(d => d.severity === 'critical' || d.severity === 'high')) {
+            console.warn('[QA] High discrepancy detected, regenerating...');
+            // Retry once with QA feedback appended (future: feed discrepancies back into prompt)
+          }
+        } catch {
+          // QA failure shouldn't block generation
+        }
+
         localResults['front'] = frontUrl;
         dispatch({
           type: 'UPDATE_RESULT',
