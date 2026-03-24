@@ -266,7 +266,12 @@ PHOTOGRAPHY DIRECTION:
 - Unfilled outfit pieces: complement with neutral basics
 - Photorealistic, commercial EC quality
 
-CRITICAL: The person must be IDENTICAL to the model reference photos. Garments must match product reference images exactly. The image MUST show the COMPLETE body from head to toe.
+ABSOLUTE PROHIBITIONS:
+- DO NOT add ANY logos, text, graphics, prints, or branding that are NOT visible in the reference images
+- If the garment is plain/solid in the reference, it MUST remain plain/solid — no invented back prints or labels
+- DO NOT hallucinate brand names, tags, or decorative elements
+
+CRITICAL: The person must be IDENTICAL to the model reference photos. Garments must match product reference images exactly — add nothing, remove nothing. The image MUST show the COMPLETE body from head to toe.
 
 ${directivePrompt}`;
 
@@ -339,6 +344,12 @@ export async function generateAngle(
   const outfitDesc = buildOutfitDescription(analyses);
   const angleInstruction = ANGLE_INSTRUCTIONS[angle];
 
+  // Build branding info from analyses to prevent hallucinated logos
+  const brandingInfo = analyses.map(a => {
+    const b = a.branding ?? 'none visible';
+    return `${a.category}: branding=${b}`;
+  }).join('; ');
+
   const prompt = `Generate the ${angle.toUpperCase()} view of the SAME model wearing the SAME outfit.
 
 FRONT VIEW ANCHOR (first image): Same model, same outfit, same studio.
@@ -352,7 +363,14 @@ PHOTOGRAPHY:
 - NO flat lighting, NO blown highlights
 - Photorealistic EC quality
 
-CRITICAL: Model identity and outfit must be consistent with the front view.
+ABSOLUTE PROHIBITIONS:
+- DO NOT add ANY logos, text, graphics, or branding that are NOT in the reference images
+- DO NOT invent back prints, tags, labels, or embroidery that don't exist in the product photos
+- If the garment is plain in the reference, it MUST be plain in ALL angles
+- Branding from analysis: ${brandingInfo}
+- If branding says "none visible", the garment must have ZERO logos/text from every angle
+
+CRITICAL: Model identity and outfit must be consistent with the front view. Every garment detail must match the reference photos EXACTLY — add nothing, remove nothing.
 
 ${buildDirectivePrompt(styling, hairMakeup)}`;
 
