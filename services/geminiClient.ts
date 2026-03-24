@@ -33,10 +33,8 @@ export const GEN_CONFIG = {
   models: {
     /** Fast text/vision model for analysis */
     flash: 'gemini-2.5-flash',
-    /** High-quality image generation model (primary) */
-    proImage: 'gemini-2.5-flash-image',
-    /** Fallback if primary is unavailable */
-    proImageFallback: 'gemini-3-pro-image-preview',
+    /** High-quality image generation model */
+    proImage: 'gemini-3-pro-image-preview',
   },
 } as const;
 
