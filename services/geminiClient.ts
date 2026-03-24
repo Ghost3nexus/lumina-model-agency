@@ -34,7 +34,7 @@ export const GEN_CONFIG = {
     /** Fast text/vision model for analysis */
     flash: 'gemini-2.5-flash',
     /** High-quality image generation model */
-    proImage: 'gemini-3-pro-image-preview',
+    proImage: 'gemini-3.1-flash-image-preview',
   },
 } as const;
 
