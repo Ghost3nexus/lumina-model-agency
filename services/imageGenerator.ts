@@ -25,14 +25,31 @@ function buildModelDescription(model: AgencyModel): string {
 }
 
 function buildGarmentDescription(analysis: GarmentAnalysis): string {
-  const details = analysis.details.length > 0 ? ` with ${analysis.details.join(', ')}` : '';
+  const c = analysis.construction;
+  const constructionDetails = c ? [
+    c.collar !== 'unknown' ? `collar: ${c.collar}` : '',
+    c.closure !== 'unknown' ? `closure: ${c.closure}` : '',
+    c.sleeves !== 'unknown' ? `sleeves: ${c.sleeves}` : '',
+    c.pockets !== 'unknown' ? `pockets: ${c.pockets}` : '',
+    c.hem !== 'unknown' ? `hem: ${c.hem}` : '',
+    c.seams !== 'unknown' ? `seams: ${c.seams}` : '',
+    c.lining !== 'unknown' ? `lining: ${c.lining}` : '',
+  ].filter(Boolean).join('; ') : '';
+
+  const extras = analysis.details.length > 0 ? `details: ${analysis.details.join(', ')}` : '';
+  const branding = analysis.branding && analysis.branding !== 'none visible' ? `branding: ${analysis.branding}` : '';
+
   return [
-    `${analysis.description}`,
-    `color: ${analysis.color}`,
+    analysis.description,
+    `color: ${analysis.color} (all colors: ${analysis.colors.join(', ')})`,
     `material: ${analysis.material}`,
     `pattern: ${analysis.pattern}`,
-    `fit: ${analysis.fit}${details}`,
-  ].join('; ');
+    `fit: ${analysis.fit}`,
+    `length: ${analysis.length ?? ''}`,
+    constructionDetails,
+    extras,
+    branding,
+  ].filter(Boolean).join('\n  ');
 }
 
 function buildOutfitDescription(analyses: GarmentAnalysis[]): string {

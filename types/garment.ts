@@ -1,5 +1,15 @@
 export type GarmentCategory = 'tops' | 'pants' | 'dress' | 'outer' | 'skirt' | 'shoes' | 'accessories';
 
+export interface GarmentConstruction {
+  collar: string;
+  closure: string;
+  sleeves: string;
+  pockets: string;
+  hem: string;
+  seams: string;
+  lining: string;
+}
+
 export interface GarmentAnalysis {
   category: GarmentCategory;
   subcategory: string;
@@ -7,8 +17,11 @@ export interface GarmentAnalysis {
   colors: string[];
   material: string;
   pattern: string;
-  details: string[];
+  construction: GarmentConstruction;
+  branding: string;
   fit: string;
+  length: string;
+  details: string[];
   description: string;
 }
 
