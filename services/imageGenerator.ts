@@ -11,6 +11,7 @@ import { createClient, GEN_CONFIG, callWithRetry, imageToBase64, parseBase64 } f
 import type { GarmentAnalysis, OutfitSlot, SlotUpload } from '../types/garment';
 import type { AgencyModel } from '../data/agencyModels';
 import type { AngleType } from '../types/generation';
+import type { StylingDirective, HairMakeupDirective } from './qualityAgent';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -155,6 +156,53 @@ ${supportingRules ? '\n' + supportingRules : ''}
 IMPORTANT: The ${heroSlot.toUpperCase()} is the HERO PRODUCT being sold. All styling prioritizes showcasing this item.`;
 }
 
+function buildDirectivePrompt(
+  styling?: StylingDirective | null,
+  hairMakeup?: HairMakeupDirective | null,
+): string {
+  const sections: string[] = [];
+
+  if (styling) {
+    const lines: string[] = ['STYLING DIRECTIVE (must be IDENTICAL in every angle):'];
+    for (const [group, rules] of Object.entries(styling)) {
+      if (group === 'pose_consistency') {
+        lines.push(`  Pose: ${rules}`);
+      } else if (group === 'styling_notes') {
+        if (rules) lines.push(`  Notes: ${rules}`);
+      } else if (typeof rules === 'object') {
+        for (const [key, val] of Object.entries(rules as Record<string, string>)) {
+          if (val && val !== 'N/A') lines.push(`  ${key}: ${val}`);
+        }
+      }
+    }
+    sections.push(lines.join('\n'));
+  }
+
+  if (hairMakeup) {
+    const lines: string[] = ['HAIR & MAKEUP LOCK (must be IDENTICAL in every angle):'];
+    if (hairMakeup.hair) {
+      for (const [key, val] of Object.entries(hairMakeup.hair)) {
+        lines.push(`  Hair ${key}: ${val}`);
+      }
+    }
+    if (hairMakeup.makeup) {
+      for (const [key, val] of Object.entries(hairMakeup.makeup)) {
+        lines.push(`  Makeup ${key}: ${val}`);
+      }
+    }
+    if (hairMakeup.nails) lines.push(`  Nails: ${hairMakeup.nails}`);
+    if (hairMakeup.consistency_locks?.length) {
+      lines.push('  CONSISTENCY RULES:');
+      for (const lock of hairMakeup.consistency_locks) {
+        lines.push(`    - ${lock}`);
+      }
+    }
+    sections.push(lines.join('\n'));
+  }
+
+  return sections.join('\n\n');
+}
+
 const ANGLE_INSTRUCTIONS: Record<Exclude<AngleType, 'front'>, string> = {
   back: 'Model turned 180 degrees, complete back view',
   side: 'Model at 3/4 angle (~45 degrees), show silhouette',
@@ -178,6 +226,8 @@ export async function generateFront(
   analyses: GarmentAnalysis[],
   model: AgencyModel,
   heroSlot?: OutfitSlot | null,
+  styling?: StylingDirective | null,
+  hairMakeup?: HairMakeupDirective | null,
 ): Promise<string> {
   const [garmentParts, modelRefParts] = await Promise.all([
     buildSlotImageParts(slots),
@@ -190,6 +240,7 @@ export async function generateFront(
   const slotCount = Object.keys(slots).length;
 
   const stylingPrompt = buildStylingPrompt(heroSlot ?? null, analyses);
+  const directivePrompt = buildDirectivePrompt(styling, hairMakeup);
 
   const prompt = `Professional EC fashion photography, ZARA / NET-A-PORTER quality.
 
@@ -215,7 +266,9 @@ PHOTOGRAPHY DIRECTION:
 - Unfilled outfit pieces: complement with neutral basics
 - Photorealistic, commercial EC quality
 
-CRITICAL: The person must be IDENTICAL to the model reference photos. Garments must match product reference images exactly. The image MUST show the COMPLETE body from head to toe.`;
+CRITICAL: The person must be IDENTICAL to the model reference photos. Garments must match product reference images exactly. The image MUST show the COMPLETE body from head to toe.
+
+${directivePrompt}`;
 
   const client = createClient(apiKey);
 
@@ -274,6 +327,8 @@ export async function generateAngle(
   slots: Partial<Record<OutfitSlot, SlotUpload>>,
   analyses: GarmentAnalysis[],
   angle: Exclude<AngleType, 'front'>,
+  styling?: StylingDirective | null,
+  hairMakeup?: HairMakeupDirective | null,
 ): Promise<string> {
   const [frontBase64Url, slotImageParts] = await Promise.all([
     imageToBase64(frontImageUrl),
@@ -297,7 +352,9 @@ PHOTOGRAPHY:
 - NO flat lighting, NO blown highlights
 - Photorealistic EC quality
 
-CRITICAL: Model identity and outfit must be consistent with the front view.`;
+CRITICAL: Model identity and outfit must be consistent with the front view.
+
+${buildDirectivePrompt(styling, hairMakeup)}`;
 
   const client = createClient(apiKey);
 

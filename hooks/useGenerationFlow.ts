@@ -23,7 +23,14 @@ import { isOutfitReady } from '../types/garment';
 import type { AgencyModel } from '../data/agencyModels';
 import { analyzeOutfit } from '../services/garmentAnalyzer';
 import { generateFront, generateAngle } from '../services/imageGenerator';
-import { verifyAnalysis, verifyGeneration } from '../services/qualityAgent';
+import {
+  verifyAnalysis,
+  verifyGeneration,
+  createStylingDirective,
+  createHairMakeupDirective,
+  type StylingDirective,
+  type HairMakeupDirective,
+} from '../services/qualityAgent';
 
 function friendlyError(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
@@ -284,7 +291,24 @@ export function useGenerationFlow() {
         return;
       }
 
-      // ── Phase 2: Generate ────────────────────────────────────────────────
+      // ── Phase 1c: Styling + Hair/Makeup Directives ─────────────────────
+      let stylingDir: StylingDirective | null = null;
+      let hairMakeupDir: HairMakeupDirective | null = null;
+      try {
+        const modelDesc = `${selectedModel.name}, ${selectedModel.height}cm, ${selectedModel.hair} hair, ${selectedModel.eyes} eyes, vibe: ${selectedModel.vibe}`;
+        const firstRefUrl = Object.values(selectedModel.images)[0] ?? '';
+
+        [stylingDir, hairMakeupDir] = await Promise.all([
+          createStylingDirective(apiKey, analyses, modelDesc, heroSlot ?? null),
+          createHairMakeupDirective(apiKey, modelDesc, firstRefUrl || undefined),
+        ]);
+        console.log('[Agent] Styling directive:', stylingDir);
+        console.log('[Agent] Hair/Makeup directive:', hairMakeupDir);
+      } catch {
+        // Non-blocking — proceed without directives
+      }
+
+      // ── Phase 2: Generate (with directives) ────────────────────────────
       dispatch({ type: 'START_GENERATING' });
 
       const localResults: Partial<Record<AngleType, string>> = {};
@@ -298,7 +322,7 @@ export function useGenerationFlow() {
       });
 
       try {
-        const frontUrl = await generateFront(apiKey, outfitSlots, analyses, selectedModel, heroSlot);
+        const frontUrl = await generateFront(apiKey, outfitSlots, analyses, selectedModel, heroSlot, stylingDir, hairMakeupDir);
 
         // Phase 2b: Generation QA — compare generated garment against reference
         const refImages = (Object.values(outfitSlots).filter(Boolean) as SlotUpload[]).map(e => e.compressed);
@@ -344,7 +368,7 @@ export function useGenerationFlow() {
 
       const parallelResults = await Promise.allSettled(
         parallelAngles.map(angle =>
-          generateAngle(apiKey, frontImageUrl, outfitSlots, analyses, angle),
+          generateAngle(apiKey, frontImageUrl, outfitSlots, analyses, angle, stylingDir, hairMakeupDir),
         ),
       );
 
