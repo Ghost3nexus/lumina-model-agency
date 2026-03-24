@@ -43,6 +43,8 @@ export interface SlotUpload {
   compressed: string;   // data URL for API (primary image)
   extraImages: SlotImage[];  // additional angles (back, detail, etc.)
   analysis?: GarmentAnalysis;
+  brandName?: string;   // brand name for size lookup (e.g. "UNIQLO", "ZARA")
+  productName?: string; // product name for size lookup (e.g. "エアリズムコットンオーバーサイズTシャツ")
 }
 
 export interface OutfitUpload {

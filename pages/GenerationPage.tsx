@@ -40,6 +40,7 @@ export default function GenerationPage() {
     addExtraImage,
     removeExtraImage,
     removeSlot,
+    updateProductInfo,
     isReadyToGenerate,
   } = useGarmentUpload();
 
@@ -224,6 +225,7 @@ export default function GenerationPage() {
                 onSetHero={setHeroSlot}
                 onAddExtra={addExtraImage}
                 onRemoveExtra={removeExtraImage}
+                onUpdateProductInfo={updateProductInfo}
               />
             )}
 

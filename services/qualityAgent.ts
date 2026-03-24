@@ -5,6 +5,7 @@
  * 2. verifyGeneration: compares generated image to original garment reference, flags discrepancies
  * 3. createStylingDirective: pro stylist agent — decides exact wearing details for all angles
  * 4. createHairMakeupDirective: hair & makeup agent — locks look across all angles
+ * 5. calculateFitting: sizing agent — computes how garment fits on model's body
  */
 
 import type { GarmentAnalysis } from '../types/garment';
@@ -384,6 +385,102 @@ export async function createHairMakeupDirective(
       makeup: { skin: 'natural', eyes: 'minimal', lips: 'natural', brows: 'natural' },
       nails: 'natural',
       consistency_locks: ['maintain hair and makeup identical across all angles'],
+    };
+  }
+}
+
+// ─── Sizing / Fitting Agent ──────────────────────────────────────────────────
+
+const SIZING_AGENT_PROMPT = `You are a professional fashion stylist and pattern maker.
+
+Given a garment's brand, product name, category, and a model's body measurements,
+calculate EXACTLY how the garment will fit and fall on this specific model.
+
+Use your knowledge of the brand's sizing standards. If you know the brand, use their
+actual size charts. If not, use standard Japanese/international sizing.
+
+Return JSON:
+{
+  "recommended_size": "S" | "M" | "L" | "XL" | etc.,
+  "size_reasoning": "why this size (e.g. 'model bust 82cm, brand M chest 88-92cm = relaxed fit')",
+  "fit_on_model": {
+    "shoulder_fit": "how shoulders align (e.g. 'natural shoulder seam at shoulder point' or 'dropped 3cm past shoulder')",
+    "chest_fit": "how chest fits (e.g. 'relaxed with 6cm ease' or 'fitted, slight pull')",
+    "waist_fit": "how waist fits (e.g. 'sits at natural waist with 4cm ease')",
+    "length_position": "EXACT position of hem on model's body (e.g. 'hem falls at mid-hip, 8cm below waist' or 'hits at mid-thigh')",
+    "sleeve_position": "where sleeves end (e.g. 'at wrist bone' or '3cm above wrist')",
+    "overall_silhouette": "how it looks on this body (e.g. 'slightly oversized through torso, skimming at hip')"
+  },
+  "bottom_fit": {
+    "waist_rise": "where waistband sits (e.g. 'mid-rise, 3cm below navel')",
+    "thigh_fit": "how thighs fit (e.g. 'relaxed with room')",
+    "knee_to_hem": "leg shape below knee (e.g. 'straight from knee to ankle')",
+    "hem_position": "where hem hits (e.g. 'full break at shoe, pooling slightly' or 'no break, clean at ankle')",
+    "inseam_visual": "visual inseam appearance on this model's leg length"
+  },
+  "visual_description": "2-3 sentence description a photographer could use: how does this outfit LOOK on this specific model?"
+}
+
+Be PRECISE with measurements and positions. A stylist looking at your output should be able
+to dress a mannequin identically.
+Return ONLY valid JSON.`;
+
+export interface FittingResult {
+  recommended_size: string;
+  size_reasoning: string;
+  fit_on_model: Record<string, string>;
+  bottom_fit: Record<string, string>;
+  visual_description: string;
+}
+
+export async function calculateFitting(
+  apiKey: string,
+  analyses: GarmentAnalysis[],
+  modelDescription: string,
+  modelMeasurements: { height: number; bust: number; waist: number; hips: number },
+  productInfo: Array<{ category: string; brandName?: string; productName?: string }>,
+): Promise<FittingResult> {
+  const client = createClient(apiKey);
+
+  const garmentDesc = analyses.map((a, i) => {
+    const info = productInfo[i];
+    return `${a.category}: ${a.subcategory}
+  brand: ${info?.brandName || 'unknown'}
+  product: ${info?.productName || 'unknown'}
+  fit: ${a.fit}
+  length: ${a.length ?? 'unknown'}
+  material: ${a.material}
+  construction: collar=${a.construction?.collar}, closure=${a.construction?.closure}`;
+  }).join('\n\n');
+
+  const modelBody = `Height: ${modelMeasurements.height}cm, Bust: ${modelMeasurements.bust}cm, Waist: ${modelMeasurements.waist}cm, Hips: ${modelMeasurements.hips}cm`;
+
+  const raw = await callWithRetry(
+    async () => {
+      const response = await client.models.generateContent({
+        model: GEN_CONFIG.models.flash,
+        contents: [{
+          role: 'user',
+          parts: [{ text: `${SIZING_AGENT_PROMPT}\n\nMODEL: ${modelDescription}\nBODY: ${modelBody}\n\nGARMENTS:\n${garmentDesc}` }],
+        }],
+        config: { temperature: 0.1 },
+      });
+      return response.text?.trim() ?? '';
+    },
+    2,
+    'calculateFitting',
+  );
+
+  try {
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return {
+      recommended_size: 'M',
+      size_reasoning: 'default',
+      fit_on_model: {},
+      bottom_fit: {},
+      visual_description: 'worn naturally as shown in product reference',
     };
   }
 }

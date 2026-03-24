@@ -21,6 +21,7 @@ interface GarmentUploadProps {
   onSetHero: (slot: OutfitSlot) => void;
   onAddExtra: (slot: OutfitSlot, file: File) => void;
   onRemoveExtra: (slot: OutfitSlot, index: number) => void;
+  onUpdateProductInfo?: (slot: OutfitSlot, brandName: string, productName: string) => void;
 }
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────
@@ -59,9 +60,10 @@ interface SlotRowProps {
   onSetHero: (slot: OutfitSlot) => void;
   onAddExtra: (slot: OutfitSlot, file: File) => void;
   onRemoveExtra: (slot: OutfitSlot, index: number) => void;
+  onUpdateProductInfo?: (slot: OutfitSlot, brandName: string, productName: string) => void;
 }
 
-function SlotRow({ slot, label, emoji, upload, isHero, isProcessing, isRequired, onUpload, onRemove, onSetHero, onAddExtra, onRemoveExtra }: SlotRowProps) {
+function SlotRow({ slot, label, emoji, upload, isHero, isProcessing, isRequired, onUpload, onRemove, onSetHero, onAddExtra, onRemoveExtra, onUpdateProductInfo }: SlotRowProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const extraInputRef = useRef<HTMLInputElement>(null);
 
@@ -193,6 +195,23 @@ function SlotRow({ slot, label, emoji, upload, isHero, isProcessing, isRequired,
             onChange={handleExtraChange}
           />
         </div>
+        {/* Brand / Product name for sizing */}
+        <div className="flex gap-1.5 pl-1">
+          <input
+            type="text"
+            placeholder="ブランド名"
+            defaultValue={upload.brandName ?? ''}
+            onBlur={e => onUpdateProductInfo?.(slot, e.target.value, upload.productName ?? '')}
+            className="flex-1 px-2 py-1 rounded bg-gray-800 border border-gray-700 text-[10px] text-gray-300 placeholder-gray-600 focus:outline-none focus:border-cyan-500/50"
+          />
+          <input
+            type="text"
+            placeholder="商品名（任意）"
+            defaultValue={upload.productName ?? ''}
+            onBlur={e => onUpdateProductInfo?.(slot, upload.brandName ?? '', e.target.value)}
+            className="flex-1 px-2 py-1 rounded bg-gray-800 border border-gray-700 text-[10px] text-gray-300 placeholder-gray-600 focus:outline-none focus:border-cyan-500/50"
+          />
+        </div>
       </div>
     );
   }
@@ -246,7 +265,7 @@ function SlotRow({ slot, label, emoji, upload, isHero, isProcessing, isRequired,
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function GarmentUpload({ slots, heroSlot, isProcessing, error, onUpload, onRemove, onSetHero, onAddExtra, onRemoveExtra }: GarmentUploadProps) {
+export function GarmentUpload({ slots, heroSlot, isProcessing, error, onUpload, onRemove, onSetHero, onAddExtra, onRemoveExtra, onUpdateProductInfo }: GarmentUploadProps) {
   const coordinateSlots = SLOT_META.filter(m => m.group === 'coordinate');
   const accessorySlots = SLOT_META.filter(m => m.group === 'accessory');
   const ready = isOutfitReady(slots);
@@ -274,6 +293,7 @@ export function GarmentUpload({ slots, heroSlot, isProcessing, error, onUpload, 
               onSetHero={onSetHero}
               onAddExtra={onAddExtra}
               onRemoveExtra={onRemoveExtra}
+              onUpdateProductInfo={onUpdateProductInfo}
             />
           ))}
         </div>
@@ -300,6 +320,7 @@ export function GarmentUpload({ slots, heroSlot, isProcessing, error, onUpload, 
               onSetHero={onSetHero}
               onAddExtra={onAddExtra}
               onRemoveExtra={onRemoveExtra}
+              onUpdateProductInfo={onUpdateProductInfo}
             />
           ))}
         </div>

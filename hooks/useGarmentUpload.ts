@@ -153,6 +153,22 @@ export function useGarmentUpload() {
     });
   }, []);
 
+  // ── Update product info (brand/product name) ─────────────────────────────
+
+  const updateProductInfo = useCallback((slot: OutfitSlot, brandName: string, productName: string) => {
+    setState(prev => {
+      const existing = prev.slots[slot];
+      if (!existing) return prev;
+      return {
+        ...prev,
+        slots: {
+          ...prev.slots,
+          [slot]: { ...existing, brandName, productName },
+        },
+      };
+    });
+  }, []);
+
   // ── Clear all ───────────────────────────────────────────────────────────────
 
   const clear = useCallback(() => {
@@ -169,6 +185,7 @@ export function useGarmentUpload() {
     addExtraImage,
     removeExtraImage,
     removeSlot,
+    updateProductInfo,
     clear,
     isReadyToGenerate,
   };

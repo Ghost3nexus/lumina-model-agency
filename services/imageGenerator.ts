@@ -11,7 +11,7 @@ import { createClient, GEN_CONFIG, callWithRetry, imageToBase64, parseBase64 } f
 import type { GarmentAnalysis, OutfitSlot, SlotUpload } from '../types/garment';
 import type { AgencyModel } from '../data/agencyModels';
 import type { AngleType } from '../types/generation';
-import type { StylingDirective, HairMakeupDirective } from './qualityAgent';
+import type { StylingDirective, HairMakeupDirective, FittingResult } from './qualityAgent';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -235,6 +235,7 @@ export async function generateFront(
   heroSlot?: OutfitSlot | null,
   styling?: StylingDirective | null,
   hairMakeup?: HairMakeupDirective | null,
+  fitting?: FittingResult | null,
 ): Promise<string> {
   const [garmentParts, modelRefParts] = await Promise.all([
     buildSlotImageParts(slots),
@@ -248,6 +249,13 @@ export async function generateFront(
 
   const stylingPrompt = buildStylingPrompt(heroSlot ?? null, analyses);
   const directivePrompt = buildDirectivePrompt(styling, hairMakeup);
+  const fittingPrompt = fitting ? `
+FITTING CALCULATION (computed from brand sizing × model body measurements):
+Size: ${fitting.recommended_size} (${fitting.size_reasoning})
+${Object.entries(fitting.fit_on_model).map(([k, v]) => `  ${k}: ${v}`).join('\n')}
+${Object.entries(fitting.bottom_fit).map(([k, v]) => `  ${k}: ${v}`).join('\n')}
+Visual: ${fitting.visual_description}
+These measurements are CALCULATED, not guessed. The garment MUST fall exactly as described.` : '';
 
   const prompt = `Professional EC fashion photography, ZARA / NET-A-PORTER quality.
 
@@ -281,7 +289,7 @@ ABSOLUTE PROHIBITIONS:
 - If a detail is not in the reference photo, it does not exist. Period.
 
 CRITICAL: The person must be IDENTICAL to the model reference photos. Garments must match product reference images exactly — add nothing, remove nothing. The image MUST show the COMPLETE body from head to toe.
-
+${fittingPrompt}
 ${directivePrompt}`;
 
   const client = createClient(apiKey);
@@ -343,6 +351,7 @@ export async function generateAngle(
   angle: Exclude<AngleType, 'front'>,
   styling?: StylingDirective | null,
   hairMakeup?: HairMakeupDirective | null,
+  fitting?: FittingResult | null,
 ): Promise<string> {
   const [frontBase64Url, slotImageParts] = await Promise.all([
     imageToBase64(frontImageUrl),
@@ -382,7 +391,7 @@ ABSOLUTE PROHIBITIONS:
 - If a detail is not in the reference photo, it does not exist. Period.
 
 CRITICAL: Model identity and outfit must be consistent with the front view. Every garment detail must match the reference photos EXACTLY — add nothing, remove nothing.
-
+${fitting ? `\nFITTING (same as front — computed, not guessed): ${fitting.visual_description}` : ''}
 ${buildDirectivePrompt(styling, hairMakeup)}`;
 
   const client = createClient(apiKey);
