@@ -163,17 +163,24 @@ function buildDirectivePrompt(
   const sections: string[] = [];
 
   if (styling) {
-    const lines: string[] = ['STYLING DIRECTIVE (must be IDENTICAL in every angle):'];
-    for (const [group, rules] of Object.entries(styling)) {
-      if (group === 'pose_consistency') {
-        lines.push(`  Pose: ${rules}`);
-      } else if (group === 'styling_notes') {
-        if (rules) lines.push(`  Notes: ${rules}`);
-      } else if (typeof rules === 'object') {
-        for (const [key, val] of Object.entries(rules as Record<string, string>)) {
-          if (val && val !== 'N/A') lines.push(`  ${key}: ${val}`);
-        }
+    const lines: string[] = ['STYLING DIRECTIVE (IDENTICAL in every angle — this is calculated, not guessed):'];
+
+    if (styling.per_garment?.length) {
+      for (const g of styling.per_garment) {
+        lines.push(`  [${g.category}]`);
+        lines.push(`    How to wear: ${g.how_to_wear}`);
+        lines.push(`    Shape priority: ${g.shape_priority}`);
+        lines.push(`    DO NOT: ${g.do_not}`);
       }
+    }
+    if (styling.garment_interaction) {
+      lines.push(`  Garment interaction: ${styling.garment_interaction}`);
+    }
+    if (styling.pose) {
+      lines.push(`  Pose: ${styling.pose}`);
+    }
+    if (styling.consistency_rule) {
+      lines.push(`  Lock: ${styling.consistency_rule}`);
     }
     sections.push(lines.join('\n'));
   }

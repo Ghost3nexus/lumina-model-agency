@@ -210,53 +210,51 @@ export async function verifyGeneration(
 
 // ─── Styling Agent ───────────────────────────────────────────────────────────
 
-const STYLING_AGENT_PROMPT = `You are an elite fashion stylist working on an EC product shoot.
+const STYLING_AGENT_PROMPT = `You are a professional fashion stylist for EC product photography.
 
-Given the garment analysis and model info, create a PRECISE styling directive that must be
-IDENTICAL across all camera angles (front, back, side, bust).
+YOUR MISSION: Make the garment look EXACTLY like the product photo, but on a living model.
+You are NOT a creative stylist. You are a PRODUCT stylist. Your job is ACCURACY, not fashion.
+
+For each garment, decide how it should be worn so that:
+1. The garment's SHAPE (silhouette, hem line, collar, sleeves) is clearly visible
+2. The garment's KEY DETAILS (buttons, pockets, seams, closures) are not hidden
+3. The HERO product is fully visible and not obscured by other items
+4. The styling is IDENTICAL across front, back, side, and bust shots
 
 Return JSON:
 {
-  "top_styling": {
-    "tuck": "fully tucked in" | "half tucked front only" | "untucked" | "tied at waist" | "N/A",
-    "buttons": "all buttoned" | "top 2 unbuttoned" | "fully unbuttoned worn open" | "N/A",
-    "sleeves": "down to cuff" | "rolled to elbow" | "pushed up to forearm" | "3/4 length" | "N/A",
-    "collar": "popped" | "laid flat" | "folded" | "N/A",
-    "drape": "natural fall" | "draped off one shoulder" | "belted" | "N/A"
-  },
-  "bottom_styling": {
-    "rise_visibility": "waistband fully visible" | "partially visible under top" | "N/A",
-    "break": "no break" | "slight break" | "full break" | "cropped above ankle" | "N/A",
-    "cuff": "uncuffed" | "single cuff" | "pinroll" | "N/A"
-  },
-  "outer_styling": {
-    "worn": "closed/buttoned" | "open showing inner layers" | "draped over shoulders" | "N/A",
-    "belt": "belted at waist" | "belt hanging loose" | "no belt" | "N/A"
-  },
-  "accessories_position": {
-    "bag": "held in right hand" | "over left shoulder" | "N/A",
-    "jewelry": "visible at neckline" | "on left wrist" | "N/A"
-  },
-  "pose_consistency": "natural standing, weight on right leg, left hand relaxed at side, right hand on hip",
-  "styling_notes": "key notes to maintain across all angles"
+  "per_garment": [
+    {
+      "category": "tops/pants/outer/dress/skirt",
+      "how_to_wear": "exactly how this specific garment should be worn (e.g. 'worn naturally, untucked, falling to mid-hip, all buttons closed, sleeves at natural length showing cuffs')",
+      "shape_priority": "what part of the garment's shape must be clearly visible (e.g. 'hem line must be visible, not tucked or bunched')",
+      "do_not": "what to avoid (e.g. 'do not tuck in — would hide the hem detail and expose waistband of pants')"
+    }
+  ],
+  "garment_interaction": "how the garments relate to each other (e.g. 'top falls over pants waistband, waistband not visible, top hem at mid-hip level')",
+  "pose": "natural standing, arms relaxed at sides, weight evenly distributed",
+  "consistency_rule": "description that locks the exact same wearing across all 4 angles"
 }
 
-RULES:
-- Choose the most natural and commercially appealing styling for EC product photography
-- DO NOT introduce styling that would expose areas not shown in product photos (e.g. don't tuck in a top if it would reveal a waistband area that wasn't photographed)
-- For basic items (plain t-shirts, simple pants): prefer UNTUCKED tops, natural fall
-- Never assume the existence of belts, waistband tapes, inner labels, or decorative elements unless the garment analysis explicitly mentions them
-- Keep it simple — the product must look exactly like the reference, just on a model
+CRITICAL RULES:
+- If a top is not meant to be tucked (t-shirt, sweater, hoodie) → DO NOT TUCK. Let it fall naturally.
+- The top's hem line and the bottom's waistband relationship must be FIXED: decide whether waistband is visible or hidden, and keep it the same in every angle
+- Never create situations where the AI needs to invent details (exposed waistbands, inner labels, belt loops that weren't in the photo)
+- SIMPLICITY: the most natural, clean wearing is almost always correct for EC
+- Think about what a real model would do in a real studio: put the clothes on normally and stand
 
 Return ONLY valid JSON.`;
 
 export interface StylingDirective {
-  top_styling: Record<string, string>;
-  bottom_styling: Record<string, string>;
-  outer_styling: Record<string, string>;
-  accessories_position: Record<string, string>;
-  pose_consistency: string;
-  styling_notes: string;
+  per_garment: Array<{
+    category: string;
+    how_to_wear: string;
+    shape_priority: string;
+    do_not: string;
+  }>;
+  garment_interaction: string;
+  pose: string;
+  consistency_rule: string;
 }
 
 export async function createStylingDirective(
@@ -292,12 +290,15 @@ export async function createStylingDirective(
     return JSON.parse(cleaned);
   } catch {
     return {
-      top_styling: { tuck: 'untucked', buttons: 'N/A', sleeves: 'down to cuff', collar: 'N/A', drape: 'natural fall' },
-      bottom_styling: { rise_visibility: 'waistband fully visible', break: 'slight break', cuff: 'uncuffed' },
-      outer_styling: { worn: 'N/A', belt: 'N/A' },
-      accessories_position: {},
-      pose_consistency: 'natural standing pose',
-      styling_notes: '',
+      per_garment: analyses.map(a => ({
+        category: a.category,
+        how_to_wear: 'worn naturally, as shown in product reference',
+        shape_priority: 'full garment shape visible',
+        do_not: 'do not add any details not in reference',
+      })),
+      garment_interaction: 'top falls naturally over bottom, waistband not exposed',
+      pose: 'natural standing, arms relaxed at sides',
+      consistency_rule: 'identical wearing in all angles',
     };
   }
 }
