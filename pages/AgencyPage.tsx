@@ -219,7 +219,7 @@ export default function AgencyPage() {
             <a href="#men" className="text-xs tracking-[0.15em] text-gray-500 hover:text-gray-900 transition-colors uppercase">Men</a>
             <a href="#influencer" className="text-xs tracking-[0.15em] text-gray-500 hover:text-gray-900 transition-colors uppercase">Influencer</a>
             <a href="#about" className="text-xs tracking-[0.15em] text-gray-500 hover:text-gray-900 transition-colors uppercase">About</a>
-            <a href="/" className="text-xs tracking-[0.15em] text-gray-400 hover:text-gray-900 transition-colors uppercase">Studio →</a>
+            <a href="/studio" className="text-xs tracking-[0.15em] text-gray-400 hover:text-gray-900 transition-colors uppercase">Studio →</a>
           </nav>
         </div>
       </header>
@@ -350,7 +350,7 @@ export default function AgencyPage() {
             Start creating studio-quality fashion photography today.
           </p>
           <a
-            href="/"
+            href="/studio"
             className="inline-block px-10 py-3 bg-gray-900 text-white text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors"
           >
             Open Studio

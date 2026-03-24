@@ -80,13 +80,13 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<ProtectedRoute><GenerationPage /></ProtectedRoute>} />
+            <Route path="/" element={<AgencyPage />} />
+            <Route path="/studio" element={<ProtectedRoute><GenerationPage /></ProtectedRoute>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/legal" element={<LegalPage />} />
-            <Route path="/agency" element={<AgencyPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

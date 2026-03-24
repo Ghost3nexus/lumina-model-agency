@@ -116,7 +116,7 @@ export default function PricingPage() {
         <a href="/" className="text-base font-bold tracking-tight text-gray-100">LUMINA</a>
         <div className="flex items-center gap-4">
           <a href="/agency" className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider">AGENCY</a>
-          <a href="/" className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider">STUDIO</a>
+          <a href="/studio" className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider">STUDIO</a>
         </div>
       </header>
 
