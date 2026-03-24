@@ -267,9 +267,11 @@ PHOTOGRAPHY DIRECTION:
 - Photorealistic, commercial EC quality
 
 ABSOLUTE PROHIBITIONS:
-- DO NOT add ANY logos, text, graphics, prints, or branding that are NOT visible in the reference images
-- If the garment is plain/solid in the reference, it MUST remain plain/solid — no invented back prints or labels
-- DO NOT hallucinate brand names, tags, or decorative elements
+- DO NOT add ANY logos, text, graphics, prints, branding, waistband tapes, belt loops, or decorative elements that are NOT visible in the reference images
+- If the garment is plain/solid in the reference, it MUST remain plain/solid from EVERY angle
+- DO NOT hallucinate brand names, tags, labels, inner waistbands, or surface decoration
+- The waist area between top and bottom garments must be clean — no invented tapes, stripes, or bands
+- If a detail is not in the reference photo, it does not exist. Period.
 
 CRITICAL: The person must be IDENTICAL to the model reference photos. Garments must match product reference images exactly — add nothing, remove nothing. The image MUST show the COMPLETE body from head to toe.
 
@@ -364,11 +366,13 @@ PHOTOGRAPHY:
 - Photorealistic EC quality
 
 ABSOLUTE PROHIBITIONS:
-- DO NOT add ANY logos, text, graphics, or branding that are NOT in the reference images
-- DO NOT invent back prints, tags, labels, or embroidery that don't exist in the product photos
-- If the garment is plain in the reference, it MUST be plain in ALL angles
+- DO NOT add ANY logos, text, graphics, branding, waistband tapes, belt loops, or decorative elements that are NOT in the reference images
+- DO NOT invent back prints, tags, labels, embroidery, or inner waistbands that don't exist in the product photos
+- If the garment is plain in the reference, it MUST be plain in ALL angles — front, back, side, bust
+- The waist area between top and bottom must be clean — no invented tapes, stripes, or bands
 - Branding from analysis: ${brandingInfo}
-- If branding says "none visible", the garment must have ZERO logos/text from every angle
+- If branding says "none visible", the garment must have ZERO logos/text/decoration from every angle
+- If a detail is not in the reference photo, it does not exist. Period.
 
 CRITICAL: Model identity and outfit must be consistent with the front view. Every garment detail must match the reference photos EXACTLY — add nothing, remove nothing.
 

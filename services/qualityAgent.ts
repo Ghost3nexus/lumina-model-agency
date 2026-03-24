@@ -241,7 +241,13 @@ Return JSON:
   "styling_notes": "key notes to maintain across all angles"
 }
 
-Choose the most natural and commercially appealing styling for EC product photography.
+RULES:
+- Choose the most natural and commercially appealing styling for EC product photography
+- DO NOT introduce styling that would expose areas not shown in product photos (e.g. don't tuck in a top if it would reveal a waistband area that wasn't photographed)
+- For basic items (plain t-shirts, simple pants): prefer UNTUCKED tops, natural fall
+- Never assume the existence of belts, waistband tapes, inner labels, or decorative elements unless the garment analysis explicitly mentions them
+- Keep it simple — the product must look exactly like the reference, just on a model
+
 Return ONLY valid JSON.`;
 
 export interface StylingDirective {

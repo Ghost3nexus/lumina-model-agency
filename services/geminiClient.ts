@@ -28,7 +28,7 @@ export const GEN_CONFIG = {
   ANALYSIS_TEMPERATURE: 0.1,
 
   /** Temperature used for image generation prompts */
-  GENERATION_TEMPERATURE: 0.7,
+  GENERATION_TEMPERATURE: 0.4,
 
   models: {
     /** Fast text/vision model for analysis */
