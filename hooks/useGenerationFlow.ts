@@ -24,6 +24,23 @@ import type { AgencyModel } from '../data/agencyModels';
 import { analyzeOutfit } from '../services/garmentAnalyzer';
 import { generateFront, generateAngle } from '../services/imageGenerator';
 
+function friendlyError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('high demand')) {
+    return 'AIモデルが混み合っています。しばらく待ってから再試行してください。';
+  }
+  if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
+    return 'APIの利用上限に達しました。少し時間を置いて再試行してください。';
+  }
+  if (msg.includes('400')) {
+    return '画像の生成に失敗しました。別の画像で試してください。';
+  }
+  if (msg.includes('401') || msg.includes('403')) {
+    return 'APIキーが無効です。設定を確認してください。';
+  }
+  return msg;
+}
+
 // ─── Initial state ────────────────────────────────────────────────────────────
 
 function makePendingResult(angle: AngleType): PreviewResult {
@@ -245,7 +262,7 @@ export function useGenerationFlow() {
       } catch (err) {
         dispatch({
           type: 'SET_ERROR',
-          message: err instanceof Error ? err.message : 'Outfit analysis failed',
+          message: friendlyError(err),
           errorType: 'api',
         });
         return;
@@ -276,7 +293,7 @@ export function useGenerationFlow() {
       } catch (err) {
         dispatch({
           type: 'SET_ERROR',
-          message: err instanceof Error ? err.message : 'Front image generation failed',
+          message: friendlyError(err),
           errorType: 'api',
         });
         return;
