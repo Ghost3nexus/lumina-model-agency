@@ -22,6 +22,7 @@ const PORTFOLIO_FILES = [
   'look-01.png', 'look-02.png', 'look-03.png', 'look-04.png',
   'campaign.png', 'verve-cover.png', 'form-editorial.png', 'muse-portrait.png',
   'v3-campaign.png', 'v3-verve-cover.png', 'v3-form-editorial.png', 'v3-muse-portrait.png',
+  'skate-01.png', 'cafe-01.png', 'vinyl-01.png', 'selfie-01.png', 'night-01.png', 'travel-01.png',
 ];
 
 /** Build images + portfolio for a v2 model, with fallback for missing files */
@@ -51,6 +52,7 @@ export const AGENCY_MODELS: AgencyModel[] = [
   { id: 'men-asia-01', name: 'SHOTA', category: 'men_asia', height: 183, measurements: { bust: 88, waist: 70, hips: 88 }, hair: 'Black, medium, natural', eyes: 'Dark brown, monolid', vibe: 'Japanese minimalist, Issey Miyake / HOMME PLISSÉ', ...m('men-asia-01') },
   { id: 'men-asia-02', name: 'JIHO', category: 'men_asia', height: 182, measurements: { bust: 87, waist: 69, hips: 87 }, hair: 'Black, medium-long, soft', eyes: 'Dark brown, double lid', vibe: 'Androgynous editorial, Raf Simons / Loewe', ...m('men-asia-02') },
   { id: 'men-asia-03', name: 'TAKU', category: 'men_asia', height: 180, measurements: { bust: 90, waist: 72, hips: 89 }, hair: 'Black with grey temples, short', eyes: 'Dark brown', vibe: 'Mature menswear, Auralee / COMOLI', ...m('men-asia-03', { main: '/agency-models/men-asia-03/v3-muse-portrait.png', polaroid: '/agency-models/men-asia-03/v3-campaign.png', beauty: '/agency-models/men-asia-03/v3-muse-portrait.png', editorial: '/agency-models/men-asia-03/campaign.png' }) },
+  { id: 'men-street-01', name: 'RYO', category: 'men_asia', height: 181, measurements: { bust: 88, waist: 70, hips: 88 }, hair: 'Black, medium, slight wave', eyes: 'Dark brown, hooded', vibe: 'Tokyo street culture, WTAPS / WACKO MARIA / BEDWIN', ...m('men-street-01') },
   { id: 'influencer-girl-01', name: 'RINKA', category: 'influencer', height: 165, measurements: { bust: 78, waist: 58, hips: 84 }, hair: 'Pink-ash, shoulder length', eyes: 'Dark brown', vibe: 'Tokyo street style, Harajuku creative', ...m('influencer-girl-01', { editorial: '/agency-models/influencer-girl-01/v3-campaign.png' }) },
   { id: 'influencer-boy-01', name: 'KAI', category: 'influencer', height: 178, measurements: { bust: 88, waist: 72, hips: 88 }, hair: 'Dark brown, curly-wavy', eyes: 'Light brown', vibe: 'Tokyo × Byron Bay, lifestyle creative', ...m('influencer-boy-01') },
 

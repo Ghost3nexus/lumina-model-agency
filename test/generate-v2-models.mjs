@@ -229,6 +229,27 @@ REFERENCE: Think of the men in Auralee, COMOLI, Studio Nicholson lookbooks. The 
   },
 
   // ─── INFLUENCER ────────────────────────────────────────────
+  // ─── STREET / CULTURE ─────────────────────────────────────
+  'men-street-01': {
+    name: 'RYO',
+    category: 'men_asia',
+    desc: `Professional fashion model and skateboarder, Japanese-American mixed heritage (American father from LA, Japanese mother from Tokyo), age 22, height 181cm, C88/W70/H88.
+FACE: Mixed heritage — subtle Western bone structure blended with Japanese softness. Sharp jawline with slight angularity, deep-set dark brown eyes with a slightly hooded, sleepy quality (奥二重). Straight nose with gentle bridge. Medium lips, often in a neutral half-expression. Light stubble (1-day growth). The face has character — not conventionally pretty, but magnetic. He looks like he's seen things and decided most of them aren't worth talking about.
+BODY: Lean skater build — narrow waist, defined shoulders from years of skating, visible forearm muscle. Not gym-built. Long limbs. Moves with the fluid economy of someone who's been on a board since childhood.
+HAIR: Black, medium length with slight natural wave/curl from his mixed heritage. Falls into his eyes. Unstyled — looks like he woke up 20 minutes ago. Sometimes tucked behind one ear.
+SKIN: Warm wheat-toned, naturally sun-kissed from outdoor life. Not salon tan — real outdoor skin. Slight weathering on hands.
+TATTOOS: Left arm full sleeve — Japanese traditional wave (和彫り nami) merging into American Traditional eagle and roses. Right inner wrist — small kanji "風" (wind). Back of neck — small simple cross. The tattoos are aged-in, not fresh — they look like they've been there for years.
+ACCESSORIES: Left ear — single silver hoop. Fingers — 2-3 heavy silver rings (Chrome Hearts style, worn and scratched). Always.
+EXPRESSION: Quiet cool. Not performing — just being. Slightly sleepy eyes that suddenly sharpen when something interests him. The anti-model energy that streetwear brands cast for.
+REFERENCE: Think Sung Jin Park's tattoo edge meets early Yura Nakano's mixed-heritage editorial quality. The guy WACKO MARIA and WTAPS would street-cast. He chose the clothes, the clothes didn't choose him.`,
+    height: 181,
+    measurements: { bust: 88, waist: 70, hips: 88 },
+    hair: 'Black, medium, slight wave',
+    eyes: 'Dark brown, hooded',
+    vibe: 'Tokyo street culture, WTAPS / WACKO MARIA / BEDWIN',
+  },
+
+  // ─── INFLUENCER ────────────────────────────────────────────
   'influencer-girl-01': {
     name: 'RINKA',
     category: 'influencer',

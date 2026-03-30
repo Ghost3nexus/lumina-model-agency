@@ -262,6 +262,26 @@ Upper body, warm interior lighting, bookshelf or architectural detail in soft ba
     ],
   },
 
+  // ═══ Street / Culture ═══
+  'men-street-01': {
+    gender: 'male', name: 'RYO',
+    identity: 'Japanese-American mixed man, black medium wavy hair, dark brown hooded eyes, 181cm, lean skater build, tattoo sleeve on left arm (Japanese wave + American Traditional eagle), silver rings, single ear hoop',
+    shots: [
+      { name: 'campaign', prompt: `MALE fashion model. Japanese-American mixed heritage man, 22 years old, black medium wavy hair falling into eyes, dark brown hooded eyes, warm wheat skin, lean skater build. LEFT ARM: full sleeve tattoo (Japanese wave merging into American Traditional eagle and roses). Silver rings on fingers, silver hoop in left ear.
+Wearing WACKO MARIA style — dark navy Cuban-collar rayon aloha shirt with subtle leopard print, black straight-leg trousers, black leather loafers. Silver wallet chain. Effortless rock'n'roll elegance.
+Full body, dark moody studio background, warm tungsten directional lighting. Standing with weight on one leg, one hand touching collar. Cool, unbothered expression. NO makeup. MENSWEAR only.${PORTRAIT}` },
+      { name: 'verve-cover', prompt: `MALE fashion model. Japanese-American mixed heritage man, 22, black medium wavy hair, dark brown hooded eyes, wheat skin, skater build. LEFT ARM: full sleeve tattoo. Silver rings, ear hoop.
+Wearing WTAPS military-workwear — olive drab M-65 field jacket, black heavyweight pocket tee, dark indigo selvedge jeans with natural fading, black Vans Old Skool (worn-in). Dog tag necklace.
+Full body, concrete grey background, hard directional side light creating strong shadows. Arms crossed, leaning slightly back. Quiet defiance. NO makeup. MENSWEAR only.${PORTRAIT}` },
+      { name: 'form-editorial', prompt: `MALE fashion model. Japanese-American mixed heritage man, 22, black medium wavy hair, dark brown hooded eyes, wheat skin. LEFT ARM: full sleeve tattoo visible. Silver rings.
+Wearing BEDWIN & THE HEARTBREAKERS preppy-street — unstructured navy cotton blazer over vintage band tee (faded black), khaki chinos with relaxed fit, white Jack Purcell sneakers. The blazer sleeves pushed up showing tattoo sleeve.
+Full body, clean white background, crisp editorial lighting. Hands in trouser pockets, relaxed stance. The guy who reads Popeye magazine but goes to punk shows. NO makeup. MENSWEAR only.${PORTRAIT}` },
+      { name: 'muse-portrait', prompt: `MALE fashion model. Japanese-American mixed heritage man, 22, black medium wavy hair, dark brown hooded eyes, wheat skin. LEFT ARM: tattoo sleeve partially visible.
+Wearing NEIGHBORHOOD style — black double-rider leather jacket (worn, not new), white crew-neck tee, raw denim jeans, black engineer boots. Silver Chrome Hearts-style rings on fingers.
+Full body, dark industrial background, dramatic chiaroscuro lighting. Skateboard held loosely at his side. Looking away from camera, profile angle. Street culture authenticity. NO makeup. MENSWEAR only.${PORTRAIT}` },
+    ],
+  },
+
   // ═══ Influencer / Creative ═══
   'influencer-girl-01': {
     gender: 'female', name: 'RINKA',
