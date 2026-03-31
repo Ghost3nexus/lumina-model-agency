@@ -87,7 +87,7 @@ function ModelDetail({ model, onClose }: { model: AgencyModel; onClose: () => vo
             </div>
 
             <a
-              href={`/?model=${model.id}`}
+              href={`/studio?model=${model.id}`}
               className="inline-block px-8 py-3 bg-gray-900 text-white text-xs tracking-[0.2em] uppercase hover:bg-gray-800 transition-colors self-start"
             >
               Book This Model
