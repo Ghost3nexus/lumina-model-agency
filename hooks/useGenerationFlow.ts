@@ -18,12 +18,17 @@ import type {
   AngleType,
   PreviewResult,
   ResultKey,
+  ShootMode,
+  SNSCreativeConfig,
+  VariationType,
 } from '../types/generation';
+import { VARIATION_KEYS } from '../types/generation';
 import type { GarmentAnalysis, OutfitSlot, SlotUpload } from '../types/garment';
 import { isOutfitReady } from '../types/garment';
 import type { AgencyModel } from '../data/agencyModels';
 import { analyzeOutfit } from '../services/garmentAnalyzer';
 import { generateFront, generateAngle } from '../services/imageGenerator';
+import { generateSNSCreative } from '../services/snsGenerator';
 import {
   verifyAnalysis,
   verifyGeneration,
@@ -158,11 +163,32 @@ function reducer(state: GenerationState, action: GenerationAction): GenerationSt
       return { ...state, status: 'analyzing', error: null };
     }
 
+    case 'SET_SHOOT_MODE': {
+      return {
+        ...INITIAL_STATE,
+        shootMode: action.mode,
+        selectedModel: state.selectedModel,
+        outfitSlots: state.outfitSlots,
+        status: computeStatus(state.outfitSlots, state.selectedModel),
+      };
+    }
+
+    case 'SET_SNS_CONFIG': {
+      return { ...state, snsConfig: action.config };
+    }
+
     case 'START_GENERATING': {
+      const keys: ResultKey[] = state.shootMode === 'ec-standard'
+        ? ['front', 'back', 'side', 'bust']
+        : [...VARIATION_KEYS];
+      const initResults: Partial<Record<ResultKey, PreviewResult>> = {};
+      for (const key of keys) {
+        initResults[key] = { id: `${key}-${Date.now()}`, angle: key, imageUrl: '', status: 'pending', retryCount: 0 };
+      }
       return {
         ...state,
         status: 'generating',
-        results: INITIAL_RESULTS,
+        results: initResults,
         progress: { current: null, completed: 0, total: 4 },
       };
     }
@@ -243,6 +269,14 @@ export function useGenerationFlow() {
 
   const reset = useCallback(() => {
     dispatch({ type: 'RESET' });
+  }, []);
+
+  const setShootMode = useCallback((mode: ShootMode) => {
+    dispatch({ type: 'SET_SHOOT_MODE', mode });
+  }, []);
+
+  const setSNSConfig = useCallback((config: SNSCreativeConfig) => {
+    dispatch({ type: 'SET_SNS_CONFIG', config });
   }, []);
 
   // ── Generate ───────────────────────────────────────────────────────────────
@@ -329,6 +363,59 @@ export function useGenerationFlow() {
         console.log('[Agent] Hair/Makeup directive:', hairMakeupDir);
       } catch {
         // Non-blocking — proceed without directives
+      }
+
+      // ── SNS Creative Mode ─────────────────────────────────────────────
+      if (state.shootMode === 'sns-creative' && state.snsConfig) {
+        dispatch({ type: 'START_GENERATING' });
+
+        const variations: VariationType[] = ['var1', 'var2', 'var3', 'var4'];
+        let completedCount = 0;
+
+        // Batch 1: var1 + var2 in parallel
+        for (const v of variations.slice(0, 2)) {
+          dispatch({ type: 'UPDATE_RESULT', angle: v, result: { status: 'generating', id: `${v}-${Date.now()}` } });
+        }
+        const batch1 = await Promise.allSettled(
+          variations.slice(0, 2).map(v =>
+            generateSNSCreative(apiKey, outfitSlots, analyses, selectedModel, state.snsConfig!, v, stylingDir, hairMakeupDir, fittingResult)
+          ),
+        );
+        for (let i = 0; i < 2; i++) {
+          const v = variations[i];
+          const r = batch1[i];
+          if (r.status === 'fulfilled') {
+            completedCount++;
+            dispatch({ type: 'UPDATE_RESULT', angle: v, result: { imageUrl: r.value, status: 'complete' } });
+          } else {
+            dispatch({ type: 'UPDATE_RESULT', angle: v, result: { status: 'error', qualityIssues: [r.reason instanceof Error ? r.reason.message : 'Generation failed'] } });
+          }
+          dispatch({ type: 'SET_PROGRESS', current: v, completed: completedCount });
+        }
+
+        // Batch 2: var3 + var4 in parallel
+        for (const v of variations.slice(2, 4)) {
+          dispatch({ type: 'UPDATE_RESULT', angle: v, result: { status: 'generating', id: `${v}-${Date.now()}` } });
+        }
+        const batch2 = await Promise.allSettled(
+          variations.slice(2, 4).map(v =>
+            generateSNSCreative(apiKey, outfitSlots, analyses, selectedModel, state.snsConfig!, v, stylingDir, hairMakeupDir, fittingResult)
+          ),
+        );
+        for (let i = 0; i < 2; i++) {
+          const v = variations[i + 2];
+          const r = batch2[i];
+          if (r.status === 'fulfilled') {
+            completedCount++;
+            dispatch({ type: 'UPDATE_RESULT', angle: v, result: { imageUrl: r.value, status: 'complete' } });
+          } else {
+            dispatch({ type: 'UPDATE_RESULT', angle: v, result: { status: 'error', qualityIssues: [r.reason instanceof Error ? r.reason.message : 'Generation failed'] } });
+          }
+          dispatch({ type: 'SET_PROGRESS', current: v, completed: completedCount });
+        }
+
+        dispatch({ type: 'COMPLETE' });
+        return;
       }
 
       // ── Phase 2: Generate (with directives) ────────────────────────────
@@ -428,7 +515,7 @@ export function useGenerationFlow() {
       dispatch({ type: 'COMPLETE' });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.outfitSlots, state.selectedModel, state.results],
+    [state.outfitSlots, state.selectedModel, state.results, state.shootMode, state.snsConfig],
   );
 
   // ── Return ─────────────────────────────────────────────────────────────────
@@ -441,6 +528,8 @@ export function useGenerationFlow() {
       setModel,
       clearGarment,
       reset,
+      setShootMode,
+      setSNSConfig,
       generate,
     },
   };
