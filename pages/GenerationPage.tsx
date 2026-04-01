@@ -20,7 +20,10 @@ import { ModelSelector } from '../components/generation/ModelSelector';
 import { PreviewGrid } from '../components/generation/PreviewGrid';
 import { GenerateButton } from '../components/generation/GenerateButton';
 import { ErrorDisplay } from '../components/generation/ErrorDisplay';
+import { ModeToggle } from '../components/generation/ModeToggle';
+import { SceneSelector } from '../components/generation/SceneSelector';
 import { AGENCY_MODELS } from '../data/agencyModels';
+import type { ShootMode } from '../types/sns';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -88,9 +91,21 @@ export default function GenerationPage() {
 
   // ── Derived flags ──────────────────────────────────────────────────────────
 
-  const canGenerate = state.status === 'ready' && !!apiKey;
+  const canGenerate = (() => {
+    if (!apiKey || state.status !== 'ready') return false;
+    if (state.shootMode === 'sns-creative') {
+      if (!state.snsConfig?.scene) return false;
+      if (state.snsConfig.scene.id === 'surreal-custom' && !state.snsConfig.customPrompt?.trim()) return false;
+    }
+    return true;
+  })();
 
   // ── Handlers ───────────────────────────────────────────────────────────────
+
+  function handleModeChange(mode: ShootMode) {
+    actions.setShootMode(mode);
+    setCurrentStep('garment');
+  }
 
   function handleGenerate() {
     if (!apiKey) {
@@ -204,12 +219,20 @@ export default function GenerationPage() {
             </div>
           )}
 
+          {/* Mode toggle */}
+          <ModeToggle
+            mode={state.shootMode}
+            onChange={handleModeChange}
+          />
+
           {/* Step tabs */}
           <StepTabs
             current={currentStep}
             onChange={setCurrentStep}
             garmentReady={isReadyToGenerate}
             modelReady={!!state.selectedModel}
+            shootMode={state.shootMode}
+            sceneReady={!!state.snsConfig?.scene}
           />
 
           {/* Step content */}
@@ -237,6 +260,13 @@ export default function GenerationPage() {
                 plan={userPlan.plan}
               />
             )}
+
+            {currentStep === 'scene' && state.shootMode === 'sns-creative' && (
+              <SceneSelector
+                config={state.snsConfig}
+                onChange={actions.setSNSConfig}
+              />
+            )}
           </div>
 
           {/* Error */}
@@ -261,7 +291,13 @@ export default function GenerationPage() {
         {/* ── Right panel (hidden on mobile until results exist) ── */}
         <div className="flex-1 flex items-start justify-center p-4 md:p-6 overflow-y-auto border-t md:border-t-0 border-gray-800">
           <div className="w-full max-w-2xl">
-            <PreviewGrid results={state.results} modelName={state.selectedModel?.name} />
+            <PreviewGrid
+              results={state.results}
+              modelName={state.selectedModel?.name}
+              heroSlot={heroSlot}
+              shootMode={state.shootMode}
+              aspectRatio={state.snsConfig?.aspectRatio}
+            />
           </div>
         </div>
       </div>
