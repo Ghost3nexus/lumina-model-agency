@@ -1,13 +1,16 @@
 /**
- * PreviewGrid.tsx — 2x2 grid showing 4 angle results
+ * PreviewGrid.tsx — 2x2 grid showing 4 angle results (EC) or 4 variation results (SNS)
  *
- * Slots: front / back / side / bust
+ * EC slots:  front / back / side / bust
+ * SNS slots: var1 / var2 / var3 / var4
  * Each slot shows status: pending / generating / complete / error
  */
 
 import { useCallback, useState } from 'react';
 import JSZip from 'jszip';
-import type { AngleType, PreviewResult, ResultKey } from '../../types/generation';
+import type { AngleType, PreviewResult } from '../../types/generation';
+import type { ShootMode, AspectRatio, ResultKey, VariationType } from '../../types/sns';
+import { VARIATION_KEYS, VARIATION_CAMERAS } from '../../types/sns';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -15,14 +18,16 @@ interface PreviewGridProps {
   results: Partial<Record<ResultKey, PreviewResult>>;
   modelName?: string;
   heroSlot?: string | null;
+  shootMode?: ShootMode;
+  aspectRatio?: AspectRatio;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function makePendingResult(angle: AngleType): PreviewResult {
+function makePendingResult(key: ResultKey): PreviewResult {
   return {
-    id: `${angle}-placeholder`,
-    angle,
+    id: `${key}-placeholder`,
+    angle: key,
     imageUrl: '',
     status: 'pending',
     retryCount: 0,
@@ -40,14 +45,15 @@ const ANGLE_LABELS: Record<AngleType, string> = {
 
 const BOTTOM_HERO_SLOTS = new Set(['pants', 'skirt']);
 
-function getAngleLabel(angle: AngleType, heroSlot?: string | null): string {
-  if (angle === 'bust' && heroSlot && BOTTOM_HERO_SLOTS.has(heroSlot)) {
-    return 'Detail';
-  }
-  return ANGLE_LABELS[angle];
-}
-
 const ANGLE_ORDER: AngleType[] = ['front', 'back', 'side', 'bust'];
+
+function getLabel(key: ResultKey, isEC: boolean, heroSlot?: string | null): string {
+  if (isEC) {
+    if (key === 'bust' && heroSlot && BOTTOM_HERO_SLOTS.has(heroSlot)) return 'Detail';
+    return ANGLE_LABELS[key as AngleType] ?? key;
+  }
+  return VARIATION_CAMERAS[key as VariationType]?.label ?? key;
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -90,13 +96,15 @@ function DownloadIcon() {
 // ─── Single slot ──────────────────────────────────────────────────────────────
 
 interface SlotProps {
-  angle: AngleType;
+  slotKey: ResultKey;
   result: PreviewResult;
   heroSlot?: string | null;
+  isEC: boolean;
+  cellAspect: string;
 }
 
-function PreviewSlot({ angle, result, heroSlot }: SlotProps) {
-  const label = getAngleLabel(angle, heroSlot);
+function PreviewSlot({ slotKey, result, heroSlot, isEC, cellAspect }: SlotProps) {
+  const label = getLabel(slotKey, isEC, heroSlot);
   const isWorking = result.status === 'generating' || result.status === 'checking' || result.status === 'retrying';
   const isComplete = result.status === 'complete';
   const isError    = result.status === 'error';
@@ -106,12 +114,12 @@ function PreviewSlot({ angle, result, heroSlot }: SlotProps) {
     if (!result.imageUrl) return;
     const a = document.createElement('a');
     a.href = result.imageUrl;
-    a.download = `lumina-${angle}.png`;
+    a.download = `lumina-${slotKey}.png`;
     a.click();
   }
 
   return (
-    <div className="relative flex items-center justify-center aspect-[3/4] rounded-lg border border-gray-800 bg-gray-900 overflow-hidden">
+    <div className={`relative flex items-center justify-center ${cellAspect} rounded-lg border border-gray-800 bg-gray-900 overflow-hidden`}>
       {/* Label badge */}
       <span className="absolute top-2 left-2 z-10 px-1.5 py-0.5 rounded bg-gray-900/70 text-gray-400 text-[10px] font-medium leading-none">
         {label}
@@ -167,11 +175,27 @@ function PreviewSlot({ angle, result, heroSlot }: SlotProps) {
 
 // ─── Grid ─────────────────────────────────────────────────────────────────────
 
-export function PreviewGrid({ results, modelName, heroSlot }: PreviewGridProps) {
+export function PreviewGrid({ results, modelName, heroSlot, shootMode, aspectRatio }: PreviewGridProps) {
   const [zipping, setZipping] = useState(false);
 
-  const completedImages = ANGLE_ORDER.filter(
-    a => results[a]?.status === 'complete' && results[a]?.imageUrl,
+  const isEC = shootMode !== 'sns-creative';
+  const displayKeys: ResultKey[] = isEC ? ANGLE_ORDER : [...VARIATION_KEYS];
+
+  // Dynamic aspect ratio for cells
+  const cellAspect = isEC ? 'aspect-[3/4]' : ({
+    '4:5':  'aspect-[4/5]',
+    '1:1':  'aspect-square',
+    '9:16': 'aspect-[9/16]',
+    '16:9': 'aspect-video',
+  } as Record<string, string>)[aspectRatio ?? '4:5'] ?? 'aspect-[4/5]';
+
+  // Grid layout changes for extreme ratios
+  const gridClass = (!isEC && aspectRatio === '16:9')
+    ? 'grid grid-cols-1 gap-3'
+    : 'grid grid-cols-2 gap-3';
+
+  const completedImages = displayKeys.filter(
+    k => results[k]?.status === 'complete' && results[k]?.imageUrl,
   );
   const canZip = completedImages.length >= 2;
 
@@ -180,13 +204,13 @@ export function PreviewGrid({ results, modelName, heroSlot }: PreviewGridProps) 
     setZipping(true);
     try {
       const zip = new JSZip();
-      for (const angle of completedImages) {
-        const dataUrl = results[angle]?.imageUrl;
+      for (const key of completedImages) {
+        const dataUrl = results[key]?.imageUrl;
         if (!dataUrl) continue;
         // Extract base64 data from data URL
         const base64 = dataUrl.split(',')[1];
         if (base64) {
-          zip.file(`lumina-${angle}.png`, base64, { base64: true });
+          zip.file(`lumina-${key}.png`, base64, { base64: true });
         }
       }
       const blob = await zip.generateAsync({ type: 'blob' });
@@ -205,10 +229,19 @@ export function PreviewGrid({ results, modelName, heroSlot }: PreviewGridProps) 
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3">
-        {ANGLE_ORDER.map(angle => {
-          const result = results[angle] ?? makePendingResult(angle);
-          return <PreviewSlot key={angle} angle={angle} result={result} heroSlot={heroSlot} />;
+      <div className={gridClass}>
+        {displayKeys.map(key => {
+          const result = results[key] ?? makePendingResult(key);
+          return (
+            <PreviewSlot
+              key={key}
+              slotKey={key}
+              result={result}
+              heroSlot={heroSlot}
+              isEC={isEC}
+              cellAspect={cellAspect}
+            />
+          );
         })}
       </div>
       {canZip && (
