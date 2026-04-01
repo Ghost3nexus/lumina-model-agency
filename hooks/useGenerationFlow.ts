@@ -17,6 +17,7 @@ import type {
   GenerationAction,
   AngleType,
   PreviewResult,
+  ResultKey,
 } from '../types/generation';
 import type { GarmentAnalysis, OutfitSlot, SlotUpload } from '../types/garment';
 import { isOutfitReady } from '../types/garment';
@@ -63,7 +64,7 @@ function makePendingResult(angle: AngleType): PreviewResult {
   };
 }
 
-const INITIAL_RESULTS: Record<AngleType, PreviewResult> = {
+const INITIAL_RESULTS: Partial<Record<ResultKey, PreviewResult>> = {
   front: makePendingResult('front'),
   back: makePendingResult('back'),
   side: makePendingResult('side'),
@@ -77,6 +78,8 @@ const INITIAL_STATE: GenerationState = {
   garmentAnalysis: null,
   outfitAnalysis: null,
   selectedModel: null,
+  shootMode: 'ec-standard',
+  snsConfig: null,
   results: INITIAL_RESULTS,
   progress: { current: null, completed: 0, total: 4 },
   error: null,
@@ -388,7 +391,7 @@ export function useGenerationFlow() {
 
       const parallelResults = await Promise.allSettled(
         parallelAngles.map(angle =>
-          generateAngle(apiKey, frontImageUrl, outfitSlots, analyses, angle, stylingDir, hairMakeupDir, fittingResult),
+          generateAngle(apiKey, frontImageUrl, outfitSlots, analyses, angle, stylingDir, hairMakeupDir, fittingResult, heroSlot),
         ),
       );
 

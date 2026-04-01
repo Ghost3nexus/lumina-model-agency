@@ -15,7 +15,7 @@ import type { StylingDirective, HairMakeupDirective, FittingResult } from './qua
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function buildModelDescription(model: AgencyModel): string {
+export function buildModelDescription(model: AgencyModel): string {
   return [
     `height ${model.height}cm`,
     `B${model.measurements.bust}/W${model.measurements.waist}/H${model.measurements.hips}`,
@@ -38,7 +38,11 @@ function buildGarmentDescription(analysis: GarmentAnalysis): string {
   ].filter(Boolean).join('; ') : '';
 
   const extras = analysis.details.length > 0 ? `details: ${analysis.details.join(', ')}` : '';
-  const branding = analysis.branding && analysis.branding !== 'none visible' ? `branding: ${analysis.branding}` : '';
+  const branding = analysis.branding && analysis.branding !== 'none visible' ? `branding (front only): ${analysis.branding}` : '';
+  const backOnly = (analysis as unknown as Record<string, unknown>).back_only_details;
+  const backWarning = Array.isArray(backOnly) && backOnly.length > 0
+    ? `⚠️ BACK-ONLY details (DO NOT show on front): ${backOnly.join(', ')}`
+    : '';
 
   return [
     analysis.description,
@@ -50,31 +54,41 @@ function buildGarmentDescription(analysis: GarmentAnalysis): string {
     constructionDetails,
     extras,
     branding,
+    backWarning,
   ].filter(Boolean).join('\n  ');
 }
 
-function buildOutfitDescription(analyses: GarmentAnalysis[]): string {
+export function buildOutfitDescription(analyses: GarmentAnalysis[]): string {
   if (analyses.length === 1) {
     return buildGarmentDescription(analyses[0]);
   }
   return analyses.map((a, i) => `Item ${i + 1} (${a.category}): ${buildGarmentDescription(a)}`).join('\n');
 }
 
-/** Collect all slot images (primary + extras) as base64 inline data parts for the API */
-async function buildSlotImageParts(
+type ImagePart = { text: string } | { inlineData: { mimeType: string; data: string } };
+
+/**
+ * Collect all slot images as labeled parts for the API.
+ * Primary images are labeled as FRONT views; extras are labeled as BACK/DETAIL views
+ * so the model knows NOT to render back-side details (tags, care labels) on the front.
+ */
+export async function buildSlotImageParts(
   slots: Partial<Record<OutfitSlot, SlotUpload>>,
-): Promise<Array<{ inlineData: { mimeType: string; data: string } }>> {
+): Promise<ImagePart[]> {
   const entries = Object.values(slots).filter(Boolean) as SlotUpload[];
-  const parts: Array<{ inlineData: { mimeType: string; data: string } }> = [];
+  const parts: ImagePart[] = [];
 
   for (const entry of entries) {
-    // Primary image
+    // Primary image — always the FRONT view
+    parts.push({ text: `[${entry.slot.toUpperCase()} — FRONT VIEW (primary reference for this garment)]` });
     const base64 = await imageToBase64(entry.compressed);
     const { mimeType, data } = parseBase64(base64);
     parts.push({ inlineData: { mimeType, data } });
 
-    // Extra images (back, detail, etc.) — improves garment fidelity
-    for (const extra of entry.extraImages ?? []) {
+    // Extra images — back/detail views (for shape reference only, NOT for front rendering)
+    for (let i = 0; i < (entry.extraImages ?? []).length; i++) {
+      const extra = entry.extraImages![i];
+      parts.push({ text: `[${entry.slot.toUpperCase()} — BACK/DETAIL VIEW #${i + 1} (shape reference only — DO NOT render back-side elements like neck tags, care labels, or back prints on the front view)]` });
       const extraBase64 = await imageToBase64(extra.compressed);
       const { mimeType: eMime, data: eData } = parseBase64(extraBase64);
       parts.push({ inlineData: { mimeType: eMime, data: eData } });
@@ -85,7 +99,7 @@ async function buildSlotImageParts(
 }
 
 /** Load model reference images for face consistency */
-async function buildModelRefParts(
+export async function buildModelRefParts(
   model: AgencyModel,
 ): Promise<Array<{ inlineData: { mimeType: string; data: string } }>> {
   const refUrls = Object.values(model.images);
@@ -216,6 +230,16 @@ const ANGLE_INSTRUCTIONS: Record<Exclude<AngleType, 'front'>, string> = {
   bust: 'Upper body close-up from chest to head, show fabric texture and face',
 };
 
+/** When pants/skirt is the hero, the "bust" slot becomes a lower-body detail shot */
+const BOTTOM_HERO_SLOTS = new Set(['pants', 'skirt']);
+
+function getAngleInstruction(angle: Exclude<AngleType, 'front'>, heroSlot?: OutfitSlot | null): string {
+  if (angle === 'bust' && heroSlot && BOTTOM_HERO_SLOTS.has(heroSlot)) {
+    return 'Lower body close-up from waist to shoes — show waistband, fabric texture, pocket details, hem, and leg silhouette. This is a PRODUCT DETAIL shot of the pants/skirt. Face is NOT required.';
+  }
+  return ANGLE_INSTRUCTIONS[angle];
+}
+
 // ─── generateFront ────────────────────────────────────────────────────────────
 
 /**
@@ -269,6 +293,7 @@ ${outfitDesc}
 ${stylingPrompt}
 
 PHOTOGRAPHY DIRECTION:
+- OUTPUT IMAGE MUST BE 3:4 PORTRAIT ASPECT RATIO (e.g. 768x1024 or 1536x2048). This is non-negotiable.
 - FULL BODY shot — head to toe, including feet and shoes. DO NOT crop at ankles or calves.
 - Leave breathing room above the head and below the feet
 - Clean studio background
@@ -277,16 +302,18 @@ PHOTOGRAPHY DIRECTION:
 - NO flat/uniform lighting. NO shadowless setup.
 - NO blown highlights — fabric texture must remain visible
 - Natural, confident standing pose
-- Each garment must match its reference image in color, material, pattern, and silhouette
+- Each garment must match its FRONT VIEW reference image in color, material, pattern, and silhouette
 - Unfilled outfit pieces: complement with neutral basics
 - Photorealistic, commercial EC quality
 
 ABSOLUTE PROHIBITIONS:
-- DO NOT add ANY logos, text, graphics, prints, branding, waistband tapes, belt loops, or decorative elements that are NOT visible in the reference images
-- If the garment is plain/solid in the reference, it MUST remain plain/solid from EVERY angle
+- DO NOT add ANY logos, text, graphics, prints, branding, waistband tapes, belt loops, or decorative elements that are NOT visible in the FRONT reference images
+- If the garment is plain/solid in the FRONT reference, it MUST remain plain/solid
 - DO NOT hallucinate brand names, tags, labels, inner waistbands, or surface decoration
+- DO NOT render back-side elements on the front: neck tags, care labels, back yoke details, back prints — these belong ONLY on back views
 - The waist area between top and bottom garments must be clean — no invented tapes, stripes, or bands
-- If a detail is not in the reference photo, it does not exist. Period.
+- If a detail is not in the FRONT reference photo, it does not exist on the front. Period.
+- BACK/DETAIL reference images are provided for silhouette/shape reference ONLY — do not transfer back-side details to the front
 
 CRITICAL: The person must be IDENTICAL to the model reference photos. Garments must match product reference images exactly — add nothing, remove nothing. The image MUST show the COMPLETE body from head to toe.
 ${fittingPrompt}
@@ -352,6 +379,7 @@ export async function generateAngle(
   styling?: StylingDirective | null,
   hairMakeup?: HairMakeupDirective | null,
   fitting?: FittingResult | null,
+  heroSlot?: OutfitSlot | null,
 ): Promise<string> {
   const [frontBase64Url, slotImageParts] = await Promise.all([
     imageToBase64(frontImageUrl),
@@ -360,7 +388,7 @@ export async function generateAngle(
   const { mimeType: frontMime, data: frontData } = parseBase64(frontBase64Url);
 
   const outfitDesc = buildOutfitDescription(analyses);
-  const angleInstruction = ANGLE_INSTRUCTIONS[angle];
+  const angleInstruction = getAngleInstruction(angle, heroSlot);
 
   // Build branding info from analyses to prevent hallucinated logos
   const brandingInfo = analyses.map(a => {
@@ -376,6 +404,7 @@ GARMENT REFERENCES (remaining images): Match each garment exactly — ${outfitDe
 ANGLE: ${angleInstruction}
 
 PHOTOGRAPHY:
+- OUTPUT IMAGE MUST BE 3:4 PORTRAIT ASPECT RATIO (e.g. 768x1024 or 1536x2048). Same ratio as the front image.
 - Same studio background as front reference
 - Same directional lighting, shadow ratio 1:2.5 to 1:3
 - NO flat lighting, NO blown highlights
@@ -404,6 +433,7 @@ ${buildDirectivePrompt(styling, hairMakeup)}`;
           role: 'user',
           parts: [
             { text: prompt },
+            { text: '[FRONT VIEW ANCHOR — same model, same outfit]:' },
             { inlineData: { mimeType: frontMime, data: frontData } },
             ...slotImageParts,
           ],

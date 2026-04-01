@@ -7,13 +7,26 @@
 
 import { useCallback, useState } from 'react';
 import JSZip from 'jszip';
-import type { AngleType, PreviewResult } from '../../types/generation';
+import type { AngleType, PreviewResult, ResultKey } from '../../types/generation';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface PreviewGridProps {
-  results: Record<AngleType, PreviewResult>;
+  results: Partial<Record<ResultKey, PreviewResult>>;
   modelName?: string;
+  heroSlot?: string | null;
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function makePendingResult(angle: AngleType): PreviewResult {
+  return {
+    id: `${angle}-placeholder`,
+    angle,
+    imageUrl: '',
+    status: 'pending',
+    retryCount: 0,
+  };
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -24,6 +37,15 @@ const ANGLE_LABELS: Record<AngleType, string> = {
   side:  'Side',
   bust:  'Bust',
 };
+
+const BOTTOM_HERO_SLOTS = new Set(['pants', 'skirt']);
+
+function getAngleLabel(angle: AngleType, heroSlot?: string | null): string {
+  if (angle === 'bust' && heroSlot && BOTTOM_HERO_SLOTS.has(heroSlot)) {
+    return 'Detail';
+  }
+  return ANGLE_LABELS[angle];
+}
 
 const ANGLE_ORDER: AngleType[] = ['front', 'back', 'side', 'bust'];
 
@@ -70,10 +92,11 @@ function DownloadIcon() {
 interface SlotProps {
   angle: AngleType;
   result: PreviewResult;
+  heroSlot?: string | null;
 }
 
-function PreviewSlot({ angle, result }: SlotProps) {
-  const label = ANGLE_LABELS[angle];
+function PreviewSlot({ angle, result, heroSlot }: SlotProps) {
+  const label = getAngleLabel(angle, heroSlot);
   const isWorking = result.status === 'generating' || result.status === 'checking' || result.status === 'retrying';
   const isComplete = result.status === 'complete';
   const isError    = result.status === 'error';
@@ -113,7 +136,7 @@ function PreviewSlot({ angle, result }: SlotProps) {
           <img
             src={result.imageUrl}
             alt={`${label} view`}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
           {/* QA warning badge */}
           {result.qualityScore !== undefined && result.qualityScore < 85 && (
@@ -144,11 +167,11 @@ function PreviewSlot({ angle, result }: SlotProps) {
 
 // ─── Grid ─────────────────────────────────────────────────────────────────────
 
-export function PreviewGrid({ results, modelName }: PreviewGridProps) {
+export function PreviewGrid({ results, modelName, heroSlot }: PreviewGridProps) {
   const [zipping, setZipping] = useState(false);
 
   const completedImages = ANGLE_ORDER.filter(
-    a => results[a].status === 'complete' && results[a].imageUrl,
+    a => results[a]?.status === 'complete' && results[a]?.imageUrl,
   );
   const canZip = completedImages.length >= 2;
 
@@ -158,7 +181,7 @@ export function PreviewGrid({ results, modelName }: PreviewGridProps) {
     try {
       const zip = new JSZip();
       for (const angle of completedImages) {
-        const dataUrl = results[angle].imageUrl;
+        const dataUrl = results[angle]?.imageUrl;
         if (!dataUrl) continue;
         // Extract base64 data from data URL
         const base64 = dataUrl.split(',')[1];
@@ -183,9 +206,10 @@ export function PreviewGrid({ results, modelName }: PreviewGridProps) {
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-2 gap-3">
-        {ANGLE_ORDER.map(angle => (
-          <PreviewSlot key={angle} angle={angle} result={results[angle]} />
-        ))}
+        {ANGLE_ORDER.map(angle => {
+          const result = results[angle] ?? makePendingResult(angle);
+          return <PreviewSlot key={angle} angle={angle} result={result} heroSlot={heroSlot} />;
+        })}
       </div>
       {canZip && (
         <button
