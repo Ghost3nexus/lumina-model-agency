@@ -30,6 +30,9 @@ export const GEN_CONFIG = {
   /** Temperature used for image generation prompts */
   GENERATION_TEMPERATURE: 0.4,
 
+  /** Temperature used for SNS creative generation prompts */
+  SNS_TEMPERATURE: 0.6,
+
   models: {
     /** Fast text/vision model for analysis */
     flash: 'gemini-2.5-flash',

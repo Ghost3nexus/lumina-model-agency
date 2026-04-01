@@ -1,11 +1,25 @@
 import type { GarmentAnalysis, OutfitSlot, SlotUpload } from './garment';
 import type { AgencyModel } from '../data/agencyModels';
+import type {
+  ShootMode,
+  SNSCreativeConfig,
+  ResultKey,
+  VariationType,
+} from './sns';
+
+export type { ShootMode, SNSCreativeConfig, ResultKey, VariationType };
+export type {
+  SceneCategory,
+  AspectRatio,
+  ScenePreset,
+} from './sns';
+export { VARIATION_KEYS, ASPECT_RATIO_PIXELS, VARIATION_CAMERAS } from './sns';
 
 export type AngleType = 'front' | 'back' | 'side' | 'bust';
 
 export interface PreviewResult {
   id: string;
-  angle: AngleType;
+  angle: ResultKey;
   imageUrl: string;
   status: 'pending' | 'generating' | 'checking' | 'complete' | 'error' | 'retrying';
   qualityScore?: number;
@@ -26,8 +40,10 @@ export interface GenerationState {
   /** Combined outfit analysis (describes the full outfit) */
   outfitAnalysis: GarmentAnalysis[] | null;
   selectedModel: AgencyModel | null;
-  results: Record<AngleType, PreviewResult>;
-  progress: { current: AngleType | null; completed: number; total: 4 };
+  shootMode: ShootMode;
+  snsConfig: SNSCreativeConfig | null;
+  results: Partial<Record<ResultKey, PreviewResult>>;
+  progress: { current: ResultKey | null; completed: number; total: number };
   error: { message: string; type: 'api' | 'quality' | 'input' } | null;
 }
 
@@ -40,8 +56,10 @@ export type GenerationAction =
   | { type: 'CLEAR_GARMENT' }
   | { type: 'START_ANALYZING' }
   | { type: 'START_GENERATING' }
-  | { type: 'UPDATE_RESULT'; angle: AngleType; result: Partial<PreviewResult> }
-  | { type: 'SET_PROGRESS'; current: AngleType | null; completed: number }
+  | { type: 'SET_SHOOT_MODE'; mode: ShootMode }
+  | { type: 'SET_SNS_CONFIG'; config: SNSCreativeConfig | null }
+  | { type: 'UPDATE_RESULT'; angle: ResultKey; result: Partial<PreviewResult> }
+  | { type: 'SET_PROGRESS'; current: ResultKey | null; completed: number }
   | { type: 'START_CHECKING' }
   | { type: 'START_RETRYING' }
   | { type: 'COMPLETE' }
