@@ -12,17 +12,17 @@ const MODES: { id: ShootMode; label: string }[] = [
 
 export function ModeToggle({ mode, onChange }: ModeToggleProps) {
   return (
-    <div className="flex gap-1 p-1 bg-gray-900 rounded-full w-fit">
+    <div className="flex gap-0 rounded-lg border border-gray-700 overflow-hidden">
       {MODES.map(m => (
         <button
           key={m.id}
           type="button"
           onClick={() => onChange(m.id)}
           className={[
-            'px-4 py-1.5 rounded-full text-xs font-medium transition-colors duration-200',
+            'flex-1 px-4 py-2.5 text-sm font-semibold transition-colors duration-200',
             m.id === mode
               ? 'bg-cyan-500 text-gray-950'
-              : 'text-gray-400 hover:text-gray-200',
+              : 'bg-gray-900 text-gray-400 hover:text-gray-200 hover:bg-gray-800',
           ].join(' ')}
         >
           {m.label}

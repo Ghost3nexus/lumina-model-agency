@@ -38,7 +38,8 @@ Return a JSON object:
     "seams": visible seam details (e.g. "contrast topstitching in gold thread", "French seams", "flatlock seams"),
     "lining": if visible (e.g. "fully lined", "half-lined in cupro", "unlined")
   },
-  "branding": visible logos, labels, tags, embroidery text — describe position and style (e.g. "small embroidered logo left chest in tonal thread", "none visible"),
+  "branding": visible logos, labels, tags, embroidery text ON THE FRONT — describe position and style (e.g. "small embroidered logo left chest in tonal thread", "none visible"). IMPORTANT: neck tags, care labels, and back-printed labels are NOT front branding — classify those as back_only_details,
+  "back_only_details": array of details visible ONLY from the back/inside (e.g. ["neck tag with brand name", "care label at inner hem", "back yoke seam"]) — these must NEVER appear on front-view generated images,
   "fit": silhouette with proportions (e.g. "relaxed straight fit, drops 2cm past natural shoulder, body skimming through torso"),
   "length": garment length description (e.g. "hip length ending at mid-hip", "midi length hitting mid-calf", "cropped at natural waist"),
   "details": array of EVERY notable design element not covered above (e.g. ["bar tacks at stress points", "interior grosgrain waistband", "horn buttons"]),

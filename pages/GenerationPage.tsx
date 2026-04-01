@@ -206,6 +206,12 @@ export default function GenerationPage() {
         {/* ── Left panel (full width on mobile, 380px on desktop) ── */}
         <div className="w-full md:w-[380px] shrink-0 flex flex-col gap-4 px-5 py-5 md:border-r border-gray-800 overflow-y-auto">
 
+          {/* Mode toggle — prominent, always visible at top */}
+          <ModeToggle
+            mode={state.shootMode}
+            onChange={handleModeChange}
+          />
+
           {/* Selected model indicator */}
           {state.selectedModel && (
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-800 bg-gray-900/60">
@@ -218,12 +224,6 @@ export default function GenerationPage() {
               <span className="text-xs text-gray-200 font-medium">{state.selectedModel.name}</span>
             </div>
           )}
-
-          {/* Mode toggle */}
-          <ModeToggle
-            mode={state.shootMode}
-            onChange={handleModeChange}
-          />
 
           {/* Step tabs */}
           <StepTabs

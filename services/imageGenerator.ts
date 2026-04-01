@@ -68,30 +68,35 @@ export function buildOutfitDescription(analyses: GarmentAnalysis[]): string {
 type ImagePart = { text: string } | { inlineData: { mimeType: string; data: string } };
 
 /**
- * Collect all slot images as labeled parts for the API.
- * Primary images are labeled as FRONT views; extras are labeled as BACK/DETAIL views
- * so the model knows NOT to render back-side details (tags, care labels) on the front.
+ * Collect slot images as labeled parts for the API.
+ *
+ * @param includeExtras - If false (default), only primary (front) images are sent.
+ *   Set to true ONLY for back-angle generation where back/detail views are relevant.
+ *   Sending back-view images during front generation causes tags/labels to bleed through.
  */
 export async function buildSlotImageParts(
   slots: Partial<Record<OutfitSlot, SlotUpload>>,
+  includeExtras = false,
 ): Promise<ImagePart[]> {
   const entries = Object.values(slots).filter(Boolean) as SlotUpload[];
   const parts: ImagePart[] = [];
 
   for (const entry of entries) {
     // Primary image — always the FRONT view
-    parts.push({ text: `[${entry.slot.toUpperCase()} — FRONT VIEW (primary reference for this garment)]` });
+    parts.push({ text: `[${entry.slot.toUpperCase()} — FRONT VIEW (primary reference)]` });
     const base64 = await imageToBase64(entry.compressed);
     const { mimeType, data } = parseBase64(base64);
     parts.push({ inlineData: { mimeType, data } });
 
-    // Extra images — back/detail views (for shape reference only, NOT for front rendering)
-    for (let i = 0; i < (entry.extraImages ?? []).length; i++) {
-      const extra = entry.extraImages![i];
-      parts.push({ text: `[${entry.slot.toUpperCase()} — BACK/DETAIL VIEW #${i + 1} (shape reference only — DO NOT render back-side elements like neck tags, care labels, or back prints on the front view)]` });
-      const extraBase64 = await imageToBase64(extra.compressed);
-      const { mimeType: eMime, data: eData } = parseBase64(extraBase64);
-      parts.push({ inlineData: { mimeType: eMime, data: eData } });
+    // Extra images — ONLY included for back-angle generation
+    if (includeExtras) {
+      for (let i = 0; i < (entry.extraImages ?? []).length; i++) {
+        const extra = entry.extraImages![i];
+        parts.push({ text: `[${entry.slot.toUpperCase()} — BACK/DETAIL VIEW #${i + 1}]` });
+        const extraBase64 = await imageToBase64(extra.compressed);
+        const { mimeType: eMime, data: eData } = parseBase64(extraBase64);
+        parts.push({ inlineData: { mimeType: eMime, data: eData } });
+      }
     }
   }
 
@@ -383,7 +388,7 @@ export async function generateAngle(
 ): Promise<string> {
   const [frontBase64Url, slotImageParts] = await Promise.all([
     imageToBase64(frontImageUrl),
-    buildSlotImageParts(slots),
+    buildSlotImageParts(slots, angle === 'back'),  // Only include back/detail images for back angle
   ]);
   const { mimeType: frontMime, data: frontData } = parseBase64(frontBase64Url);
 
