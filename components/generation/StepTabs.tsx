@@ -1,20 +1,23 @@
 /**
  * StepTabs.tsx — Tab navigation for the generation flow
  *
- * Two tabs: 商品画像 (garment) / モデル (model)
+ * Two tabs (EC): 商品画像 (garment) / モデル (model)
+ * Three tabs (SNS): 商品画像 (garment) / モデル (model) / シーン (scene)
  * Shows a checkmark when each step is ready.
  */
 
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type StepId = 'garment' | 'model';
+export type StepId = 'garment' | 'model' | 'scene';
 
 interface StepTabsProps {
   current: StepId;
   onChange: (step: StepId) => void;
   garmentReady: boolean;
   modelReady: boolean;
+  shootMode?: 'ec-standard' | 'sns-creative';
+  sceneReady?: boolean;
 }
 
 // ─── Checkmark SVG ────────────────────────────────────────────────────────────
@@ -41,11 +44,14 @@ function CheckIcon() {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function StepTabs({ current, onChange, garmentReady, modelReady }: StepTabsProps) {
+export function StepTabs({ current, onChange, garmentReady, modelReady, shootMode, sceneReady }: StepTabsProps) {
   const tabs: { id: StepId; label: string; ready: boolean }[] = [
     { id: 'garment', label: '商品画像', ready: garmentReady },
     { id: 'model',   label: 'モデル',   ready: modelReady  },
   ];
+  if (shootMode === 'sns-creative') {
+    tabs.push({ id: 'scene', label: 'シーン', ready: sceneReady ?? false });
+  }
 
   return (
     <div className="flex gap-2 p-1 bg-gray-900 rounded-full w-fit">
