@@ -22,7 +22,23 @@ const PORTFOLIO_FILES = [
   'look-01.png', 'look-02.png', 'look-03.png', 'look-04.png',
   'campaign.png', 'verve-cover.png', 'form-editorial.png', 'muse-portrait.png',
   'v3-campaign.png', 'v3-verve-cover.png', 'v3-form-editorial.png', 'v3-muse-portrait.png',
+  // RYO lifestyle
   'skate-01.png', 'cafe-01.png', 'vinyl-01.png', 'selfie-01.png', 'night-01.png', 'travel-01.png',
+  // Lifestyle shots (all models)
+  'arch-01.png', 'studio-01.png', 'city-01.png',          // ELENA
+  'performance-01.png', 'gallery-01.png', 'london-01.png', // AMARA
+  'kitchen-01.png', 'cinema-01.png', 'market-01.png', 'terrace-01.png', // SOFIA
+  'tea-01.png', 'reading-01.png', 'koenji-01.png',         // MIKU
+  'museum-01.png', 'skincare-01.png', 'paris-01.png',      // HARIN
+  'camera-01.png', 'flea-01.png', 'zine-01.png', 'belleville-01.png', // LIEN
+  'chess-01.png', 'tailor-01.png', 'watch-01.png',         // IDRIS
+  'design-01.png', 'bike-01.png', 'cook-01.png',           // LARS
+  'wine-01.png', 'football-01.png', 'dinner-01.png', 'tango-01.png', // MATEO
+  'run-01.png', 'ceramics-01.png', 'minimal-01.png',       // SHOTA
+  'music-01.png', 'cat-01.png', 'paint-01.png', 'tokyo-01.png', // JIHO
+  'books-01.png', 'daughter-01.png',                        // TAKU
+  'dj-01.png', 'vintage-01.png', 'shimokita-01.png',       // RINKA
+  'surf-01.png', 'yoga-01.png', 'kamakura-01.png', 'workshop-01.png', // KAI
 ];
 
 /** Build images + portfolio for a v2 model, with fallback for missing files */
