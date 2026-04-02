@@ -39,10 +39,6 @@ function buildGarmentDescription(analysis: GarmentAnalysis): string {
 
   const extras = analysis.details.length > 0 ? `details: ${analysis.details.join(', ')}` : '';
   const branding = analysis.branding && analysis.branding !== 'none visible' ? `branding (front only): ${analysis.branding}` : '';
-  const backOnly = (analysis as unknown as Record<string, unknown>).back_only_details;
-  const backWarning = Array.isArray(backOnly) && backOnly.length > 0
-    ? `⚠️ BACK-ONLY details (DO NOT show on front): ${backOnly.join(', ')}`
-    : '';
 
   return [
     analysis.description,
@@ -54,7 +50,6 @@ function buildGarmentDescription(analysis: GarmentAnalysis): string {
     constructionDetails,
     extras,
     branding,
-    backWarning,
   ].filter(Boolean).join('\n  ');
 }
 
@@ -161,8 +156,27 @@ const SUPPORTING_STYLING: Record<string, string> = {
   outer: 'Supporting outerwear: worn OPEN to show hero item underneath',
 };
 
+/** Extract back-only details from analyses for injection into ABSOLUTE PROHIBITIONS */
+function buildBackOnlyProhibitions(analyses: GarmentAnalysis[]): string {
+  const items: string[] = [];
+  for (const a of analyses) {
+    const backOnly = (a as unknown as Record<string, unknown>).back_only_details;
+    if (Array.isArray(backOnly) && backOnly.length > 0) {
+      items.push(`${a.category}: ${backOnly.join(', ')}`);
+    }
+  }
+  if (items.length === 0) return '';
+  return `- THESE SPECIFIC DETAILS EXIST ONLY ON THE BACK/INSIDE AND MUST NOT APPEAR ON THE FRONT:\n  ${items.join('\n  ')}`;
+}
+
+/** Always-on styling rule regardless of heroSlot */
+const UNIVERSAL_STYLING = `UNIVERSAL STYLING RULE:
+- The top is ALWAYS worn UNTUCKED. The hem falls naturally over the waistband.
+- NEVER tuck the top into pants or skirt. Not for hoodies, not for shirts, not for any garment.
+- The waistband of the bottom garment should NOT be visible — it is covered by the top's natural drape.`;
+
 function buildStylingPrompt(heroSlot: OutfitSlot | null, analyses: GarmentAnalysis[]): string {
-  if (!heroSlot) return '';
+  if (!heroSlot) return UNIVERSAL_STYLING;
 
   const heroRule = HERO_STYLING[heroSlot] || '';
   const supportingRules = analyses
@@ -171,7 +185,9 @@ function buildStylingPrompt(heroSlot: OutfitSlot | null, analyses: GarmentAnalys
     .filter(Boolean)
     .join('\n');
 
-  return `${heroRule}
+  return `${UNIVERSAL_STYLING}
+
+${heroRule}
 ${supportingRules ? '\n' + supportingRules : ''}
 
 IMPORTANT: The ${heroSlot.toUpperCase()} is the HERO PRODUCT being sold. All styling prioritizes showcasing this item.`;
@@ -321,7 +337,8 @@ ABSOLUTE PROHIBITIONS:
 - DO NOT render back-side elements on the front: neck tags, care labels, back yoke details, back prints — these belong ONLY on back views
 - The waist area between top and bottom garments must be clean — no invented tapes, stripes, or bands
 - If a detail is not in the FRONT reference photo, it does not exist on the front. Period.
-- BACK/DETAIL reference images are provided for silhouette/shape reference ONLY — do not transfer back-side details to the front
+- NEVER tuck the top into the pants/skirt. The top hem must fall naturally over the waistband.
+${buildBackOnlyProhibitions(analyses)}
 
 CRITICAL: The person must be IDENTICAL to the model reference photos. Garments must match product reference images exactly — add nothing, remove nothing. The image MUST show the COMPLETE body from head to toe.
 ${fittingPrompt}
