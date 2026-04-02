@@ -238,8 +238,8 @@ Return JSON:
 }
 
 CRITICAL RULES:
-- If a top is not meant to be tucked (t-shirt, sweater, hoodie) → DO NOT TUCK. Let it fall naturally.
-- The top's hem line and the bottom's waistband relationship must be FIXED: decide whether waistband is visible or hidden, and keep it the same in every angle
+- ABSOLUTE RULE: The top is ALWAYS worn UNTUCKED. NEVER tuck the top into pants or skirt. No exceptions. Not for hoodies, not for shirts, not for any garment. The top hem falls naturally over the waistband.
+- The top's hem line and the bottom's waistband relationship must be FIXED: top always falls OVER the waistband, waistband is NOT visible
 - Never create situations where the AI needs to invent details (exposed waistbands, inner labels, belt loops that weren't in the photo)
 - SIMPLICITY: the most natural, clean wearing is almost always correct for EC
 - Think about what a real model would do in a real studio: put the clothes on normally and stand

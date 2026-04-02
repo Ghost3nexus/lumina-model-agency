@@ -133,10 +133,11 @@ const HERO_STYLING: Record<string, string> = {
 - Bottom: simple complementary pants, not the focus`,
 
   pants: `STYLING — PANTS are the HERO product:
-- Waistband and rise MUST be clearly visible (key selling point)
-- Top MUST be tucked in or cropped short to expose the waist area
 - Full leg silhouette visible from waist to ankle/hem
-- Shoes visible at bottom`,
+- Shoes visible at bottom
+- Top worn UNTUCKED, falling naturally over the waistband
+- DO NOT tuck the top into the pants. NEVER. No exceptions.
+- Show pants silhouette through the natural drape of the untucked top`,
 
   outer: `STYLING — OUTERWEAR is the HERO product:
 - Jacket/coat worn CLOSED (buttoned/zipped) to show silhouette
@@ -149,8 +150,9 @@ const HERO_STYLING: Record<string, string> = {
 - No heavy layering that obscures the dress`,
 
   skirt: `STYLING — SKIRT is the HERO product:
-- Waistband visible, top tucked in or cropped
-- Full skirt length and silhouette shown`,
+- Full skirt length and silhouette shown
+- Top worn UNTUCKED, falling naturally
+- DO NOT tuck the top into the skirt`,
 };
 
 const SUPPORTING_STYLING: Record<string, string> = {
@@ -307,6 +309,7 @@ PHOTOGRAPHY DIRECTION:
 - NO flat/uniform lighting. NO shadowless setup.
 - NO blown highlights — fabric texture must remain visible
 - Natural, confident standing pose
+- The top is ALWAYS worn UNTUCKED — hem falls naturally over the waistband. NEVER tuck the top in.
 - Each garment must match its FRONT VIEW reference image in color, material, pattern, and silhouette
 - Unfilled outfit pieces: complement with neutral basics
 - Photorealistic, commercial EC quality
@@ -423,6 +426,8 @@ ABSOLUTE PROHIBITIONS:
 - Branding from analysis: ${brandingInfo}
 - If branding says "none visible", the garment must have ZERO logos/text/decoration from every angle
 - If a detail is not in the reference photo, it does not exist. Period.
+
+STYLING RULE: The top MUST be worn UNTUCKED in every angle, exactly as shown in the front view. DO NOT tuck the top into pants or skirt. The styling must be IDENTICAL to the front image.
 
 CRITICAL: Model identity and outfit must be consistent with the front view. Every garment detail must match the reference photos EXACTLY — add nothing, remove nothing.
 ${fitting ? `\nFITTING (same as front — computed, not guessed): ${fitting.visual_description}` : ''}
