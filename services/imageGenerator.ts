@@ -170,10 +170,7 @@ function buildBackOnlyProhibitions(analyses: GarmentAnalysis[]): string {
 }
 
 /** Always-on styling rule regardless of heroSlot */
-const UNIVERSAL_STYLING = `UNIVERSAL STYLING RULE:
-- The top is ALWAYS worn UNTUCKED. The hem falls naturally over the waistband.
-- NEVER tuck the top into pants or skirt. Not for hoodies, not for shirts, not for any garment.
-- The waistband of the bottom garment should NOT be visible — it is covered by the top's natural drape.`;
+const UNIVERSAL_STYLING = `STYLING: Top worn UNTUCKED, hem falls naturally over waistband. NEVER tuck in.`;
 
 function buildStylingPrompt(heroSlot: OutfitSlot | null, analyses: GarmentAnalysis[]): string {
   if (!heroSlot) return UNIVERSAL_STYLING;
@@ -191,60 +188,6 @@ ${heroRule}
 ${supportingRules ? '\n' + supportingRules : ''}
 
 IMPORTANT: The ${heroSlot.toUpperCase()} is the HERO PRODUCT being sold. All styling prioritizes showcasing this item.`;
-}
-
-function buildDirectivePrompt(
-  styling?: StylingDirective | null,
-  hairMakeup?: HairMakeupDirective | null,
-): string {
-  const sections: string[] = [];
-
-  if (styling) {
-    const lines: string[] = ['STYLING DIRECTIVE (IDENTICAL in every angle — this is calculated, not guessed):'];
-
-    if (styling.per_garment?.length) {
-      for (const g of styling.per_garment) {
-        lines.push(`  [${g.category}]`);
-        lines.push(`    How to wear: ${g.how_to_wear}`);
-        lines.push(`    Shape priority: ${g.shape_priority}`);
-        lines.push(`    DO NOT: ${g.do_not}`);
-      }
-    }
-    if (styling.garment_interaction) {
-      lines.push(`  Garment interaction: ${styling.garment_interaction}`);
-    }
-    if (styling.pose) {
-      lines.push(`  Pose: ${styling.pose}`);
-    }
-    if (styling.consistency_rule) {
-      lines.push(`  Lock: ${styling.consistency_rule}`);
-    }
-    sections.push(lines.join('\n'));
-  }
-
-  if (hairMakeup) {
-    const lines: string[] = ['HAIR & MAKEUP LOCK (must be IDENTICAL in every angle):'];
-    if (hairMakeup.hair) {
-      for (const [key, val] of Object.entries(hairMakeup.hair)) {
-        lines.push(`  Hair ${key}: ${val}`);
-      }
-    }
-    if (hairMakeup.makeup) {
-      for (const [key, val] of Object.entries(hairMakeup.makeup)) {
-        lines.push(`  Makeup ${key}: ${val}`);
-      }
-    }
-    if (hairMakeup.nails) lines.push(`  Nails: ${hairMakeup.nails}`);
-    if (hairMakeup.consistency_locks?.length) {
-      lines.push('  CONSISTENCY RULES:');
-      for (const lock of hairMakeup.consistency_locks) {
-        lines.push(`    - ${lock}`);
-      }
-    }
-    sections.push(lines.join('\n'));
-  }
-
-  return sections.join('\n\n');
 }
 
 const ANGLE_INSTRUCTIONS: Record<Exclude<AngleType, 'front'>, string> = {
@@ -280,8 +223,8 @@ export async function generateFront(
   analyses: GarmentAnalysis[],
   model: AgencyModel,
   heroSlot?: OutfitSlot | null,
-  styling?: StylingDirective | null,
-  hairMakeup?: HairMakeupDirective | null,
+  _styling?: StylingDirective | null,
+  _hairMakeup?: HairMakeupDirective | null,
   fitting?: FittingResult | null,
 ): Promise<string> {
   const [garmentParts, modelRefParts] = await Promise.all([
@@ -295,54 +238,26 @@ export async function generateFront(
   const slotCount = Object.keys(slots).length;
 
   const stylingPrompt = buildStylingPrompt(heroSlot ?? null, analyses);
-  const directivePrompt = buildDirectivePrompt(styling, hairMakeup);
-  const fittingPrompt = fitting ? `
-FITTING CALCULATION (computed from brand sizing × model body measurements):
-Size: ${fitting.recommended_size} (${fitting.size_reasoning})
-${Object.entries(fitting.fit_on_model).map(([k, v]) => `  ${k}: ${v}`).join('\n')}
-${Object.entries(fitting.bottom_fit).map(([k, v]) => `  ${k}: ${v}`).join('\n')}
-Visual: ${fitting.visual_description}
-These measurements are CALCULATED, not guessed. The garment MUST fall exactly as described.` : '';
+  const fittingPrompt = fitting ? `Fit: ${fitting.visual_description}` : '';
 
-  const prompt = `Professional EC fashion photography, ZARA / NET-A-PORTER quality.
+  const backProhibitions = buildBackOnlyProhibitions(analyses);
 
-MODEL IDENTITY (LOCKED — use the EXACT person shown in the model reference photos below):
-${modelDesc}
-The model reference photos establish the face, bone structure, skin, and hair. Every facial feature must match precisely.
+  const prompt = `EC fashion photo. 3:4 portrait. Full body head-to-toe on clean studio background.
 
-OUTFIT (match garment reference images EXACTLY):
-${outfitDesc}
+RULES (OBEY ALL):
+1. Top is UNTUCKED — hem falls over waistband. NEVER tuck in.
+2. Only show details visible in the FRONT reference photo. No back tags, no care labels, no invented decoration.
+3. Match the model reference photos exactly (face, body, skin, hair).
+4. Match garment reference photos exactly (color, material, pattern, silhouette). Add nothing.
+5. Directional light from 45deg, shadow ratio 1:2.5–1:3. No flat light, no blown highlights.
+${backProhibitions ? `6. ${backProhibitions}` : ''}
+
+MODEL: ${modelDesc}
+
+OUTFIT: ${outfitDesc}
 
 ${stylingPrompt}
-
-PHOTOGRAPHY DIRECTION:
-- OUTPUT IMAGE MUST BE 3:4 PORTRAIT ASPECT RATIO (e.g. 768x1024 or 1536x2048). This is non-negotiable.
-- FULL BODY shot — head to toe, including feet and shoes. DO NOT crop at ankles or calves.
-- Leave breathing room above the head and below the feet
-- Clean studio background
-- DIRECTIONAL studio lighting from 45 degrees with visible shadows — shadow ratio 1:2.5 to 1:3
-- Light must create visible shadows on the body and garments that reveal fabric folds and 3D shape
-- NO flat/uniform lighting. NO shadowless setup.
-- NO blown highlights — fabric texture must remain visible
-- Natural, confident standing pose
-- The top is ALWAYS worn UNTUCKED — hem falls naturally over the waistband. NEVER tuck the top in.
-- Each garment must match its FRONT VIEW reference image in color, material, pattern, and silhouette
-- Unfilled outfit pieces: complement with neutral basics
-- Photorealistic, commercial EC quality
-
-ABSOLUTE PROHIBITIONS:
-- DO NOT add ANY logos, text, graphics, prints, branding, waistband tapes, belt loops, or decorative elements that are NOT visible in the FRONT reference images
-- If the garment is plain/solid in the FRONT reference, it MUST remain plain/solid
-- DO NOT hallucinate brand names, tags, labels, inner waistbands, or surface decoration
-- DO NOT render back-side elements on the front: neck tags, care labels, back yoke details, back prints — these belong ONLY on back views
-- The waist area between top and bottom garments must be clean — no invented tapes, stripes, or bands
-- If a detail is not in the FRONT reference photo, it does not exist on the front. Period.
-- NEVER tuck the top into the pants/skirt. The top hem must fall naturally over the waistband.
-${buildBackOnlyProhibitions(analyses)}
-
-CRITICAL: The person must be IDENTICAL to the model reference photos. Garments must match product reference images exactly — add nothing, remove nothing. The image MUST show the COMPLETE body from head to toe.
-${fittingPrompt}
-${directivePrompt}`;
+${fittingPrompt}`;
 
   const client = createClient(apiKey);
 
@@ -401,18 +316,17 @@ export async function generateAngle(
   slots: Partial<Record<OutfitSlot, SlotUpload>>,
   analyses: GarmentAnalysis[],
   angle: Exclude<AngleType, 'front'>,
-  styling?: StylingDirective | null,
-  hairMakeup?: HairMakeupDirective | null,
+  _styling?: StylingDirective | null,
+  _hairMakeup?: HairMakeupDirective | null,
   fitting?: FittingResult | null,
   heroSlot?: OutfitSlot | null,
 ): Promise<string> {
   const [frontBase64Url, slotImageParts] = await Promise.all([
     imageToBase64(frontImageUrl),
-    buildSlotImageParts(slots, angle === 'back'),  // Only include back/detail images for back angle
+    buildSlotImageParts(slots, angle === 'back'),
   ]);
   const { mimeType: frontMime, data: frontData } = parseBase64(frontBase64Url);
 
-  const outfitDesc = buildOutfitDescription(analyses);
   const angleInstruction = getAngleInstruction(angle, heroSlot);
 
   // Build branding info from analyses to prevent hallucinated logos
@@ -421,34 +335,14 @@ export async function generateAngle(
     return `${a.category}: branding=${b}`;
   }).join('; ');
 
-  const prompt = `Generate the ${angle.toUpperCase()} view of the SAME model wearing the SAME outfit.
+  const prompt = `${angle.toUpperCase()} view of the same model and outfit. 3:4 portrait.
 
-FRONT VIEW ANCHOR (first image): Same model, same outfit, same studio.
-GARMENT REFERENCES (remaining images): Match each garment exactly — ${outfitDesc}
-
-ANGLE: ${angleInstruction}
-
-PHOTOGRAPHY:
-- OUTPUT IMAGE MUST BE 3:4 PORTRAIT ASPECT RATIO (e.g. 768x1024 or 1536x2048). Same ratio as the front image.
-- Same studio background as front reference
-- Same directional lighting, shadow ratio 1:2.5 to 1:3
-- NO flat lighting, NO blown highlights
-- Photorealistic EC quality
-
-ABSOLUTE PROHIBITIONS:
-- DO NOT add ANY logos, text, graphics, branding, waistband tapes, belt loops, or decorative elements that are NOT in the reference images
-- DO NOT invent back prints, tags, labels, embroidery, or inner waistbands that don't exist in the product photos
-- If the garment is plain in the reference, it MUST be plain in ALL angles — front, back, side, bust
-- The waist area between top and bottom must be clean — no invented tapes, stripes, or bands
-- Branding from analysis: ${brandingInfo}
-- If branding says "none visible", the garment must have ZERO logos/text/decoration from every angle
-- If a detail is not in the reference photo, it does not exist. Period.
-
-STYLING RULE: The top MUST be worn UNTUCKED in every angle, exactly as shown in the front view. DO NOT tuck the top into pants or skirt. The styling must be IDENTICAL to the front image.
-
-CRITICAL: Model identity and outfit must be consistent with the front view. Every garment detail must match the reference photos EXACTLY — add nothing, remove nothing.
-${fitting ? `\nFITTING (same as front — computed, not guessed): ${fitting.visual_description}` : ''}
-${buildDirectivePrompt(styling, hairMakeup)}`;
+RULES (OBEY ALL):
+1. Top is UNTUCKED — identical to the front image. NEVER tuck in.
+2. Same studio, same lighting, same outfit as front. Match the front image exactly.
+3. No invented details. If plain in front, plain in ${angle}. Branding: ${brandingInfo}
+4. ${angleInstruction}
+${fitting ? `\nFit: ${fitting.visual_description}` : ''}`;
 
   const client = createClient(apiKey);
 
