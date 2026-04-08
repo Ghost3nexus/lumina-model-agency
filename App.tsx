@@ -8,6 +8,7 @@ import PricingPage from './pages/PricingPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import LegalPage from './pages/LegalPage';
+import VideoStudioPage from './pages/VideoStudioPage';
 
 // ─── Error Boundary ──────────────────────────────────────────────────────────
 
@@ -82,6 +83,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<AgencyPage />} />
             <Route path="/studio" element={<ProtectedRoute><GenerationPage /></ProtectedRoute>} />
+            <Route path="/video" element={<ProtectedRoute><VideoStudioPage /></ProtectedRoute>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/terms" element={<TermsPage />} />
