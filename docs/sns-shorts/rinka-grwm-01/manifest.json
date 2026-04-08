@@ -1,0 +1,15 @@
+{
+  "description": "RINKA GRWM #01 — 朝5時に寝たDJの支度（Instagram Reels用）",
+  "assets": [
+    { "file": "stills/01-hook.png", "purpose": "フック — 寝起きダル顔セルフィー", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット1" },
+    { "file": "stills/02-hair-set.png", "purpose": "髪セット — 鏡越しピンクアッシュ髪をかき上げ", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット2" },
+    { "file": "stills/03-dr-martens.png", "purpose": "Dr. Martens 1460 ピンク紐クローズアップ", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット3" },
+    { "file": "stills/04-dickies.png", "purpose": "Dickies 874 鏡越し下半身", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット4" },
+    { "file": "stills/05-human-made.png", "purpose": "HUMAN MADE Tee ハートロゴ見せ", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット5" },
+    { "file": "stills/06-sacai.png", "purpose": "sacai MA-1 着用 鏡越し上半身", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット6" },
+    { "file": "stills/07-accessory.png", "purpose": "Vivienneネックレス＋ビーズブレスレット＋スタータトゥー", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット7" },
+    { "file": "stills/08-full-look.png", "purpose": "全身コーデ完成 部屋で全身ポーズ", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット8" },
+    { "file": "stills/09-street-walk.png", "purpose": "下北沢商店街を歩く", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット9" },
+    { "file": "stills/10-look-back.png", "purpose": "振り返りピースサイン笑顔", "tool": "Gemini 3.1 Flash Image Preview", "created": "2026-04-08", "used_in": "RINKA GRWM Reels カット10" }
+  ]
+}
