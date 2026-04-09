@@ -38,14 +38,14 @@ export function useVideoPipeline() {
     }));
   }, []);
 
-  const generate = useCallback(async (request: VideoGenerationRequest) => {
+  const generate = useCallback(async (request: VideoGenerationRequest, apiKey: string) => {
     abortRef.current = false;
     setError(null);
     setResult(null);
     setState(INITIAL_STATE);
 
     try {
-      const pipelineResult = await runPipeline(request, (step, status) => {
+      const pipelineResult = await runPipeline(request, apiKey, (step, status) => {
         if (abortRef.current) return;
 
         if (status === 'done') {

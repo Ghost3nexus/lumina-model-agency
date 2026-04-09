@@ -9,17 +9,12 @@ import { createClient, GEN_CONFIG, callWithRetry, parseBase64 } from '../geminiC
 import type { AgencyModel } from '../../data/agencyModels';
 import { buildModelDescription } from '../imageGenerator';
 
-function getApiKey(): string {
-  const key = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!key) throw new Error('VITE_GEMINI_API_KEY not configured');
-  return key;
-}
-
 export interface StillInput {
   model: AgencyModel;
   scenePrompt: string;
   garmentImage?: string; // base64 data URL
   aspectRatio?: '16:9' | '9:16' | '1:1';
+  apiKey: string; // Gemini API key — passed from UI (same pattern as existing Studio)
 }
 
 /**
@@ -27,7 +22,8 @@ export interface StillInput {
  * Optimized for video: natural pose, motion-ready composition.
  */
 export async function generateStill(input: StillInput): Promise<string> {
-  const client = createClient(getApiKey());
+  if (!input.apiKey) throw new Error('Gemini API key required');
+  const client = createClient(input.apiKey);
   const modelDesc = buildModelDescription(input.model);
 
   const prompt = buildVideoStillPrompt(modelDesc, input.scenePrompt, input.aspectRatio);

@@ -25,6 +25,7 @@ export type PipelineCallback = (step: PipelineStep, status: string) => void;
  */
 export async function runPipeline(
   request: VideoGenerationRequest,
+  apiKey: string,
   onProgress?: PipelineCallback,
 ): Promise<VideoGenerationResult> {
   const model = AGENCY_MODELS.find(m => m.id === request.modelId);
@@ -46,6 +47,7 @@ export async function runPipeline(
     scenePrompt,
     garmentImage: request.garmentImage,
     aspectRatio: request.aspectRatio,
+    apiKey,
   });
 
   onProgress?.('still', 'done');

@@ -8,8 +8,8 @@
 const REPLICATE_API = 'https://api.replicate.com/v1';
 
 function getToken(): string {
-  const token = import.meta.env.VITE_REPLICATE_API_TOKEN;
-  if (!token) throw new Error('VITE_REPLICATE_API_TOKEN not configured');
+  const token = import.meta.env.VITE_REPLICATE_API_TOKEN || import.meta.env.VITE_REPLICATE_API_KEY;
+  if (!token) throw new Error('VITE_REPLICATE_API_TOKEN or VITE_REPLICATE_API_KEY not configured');
   return token;
 }
 

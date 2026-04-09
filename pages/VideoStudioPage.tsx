@@ -18,6 +18,8 @@ import { VOICE_MAP } from '../data/video/voiceMap';
 import type { AgencyModel } from '../data/agencyModels';
 import type { VideoGenerationRequest } from '../types/video';
 
+const API_KEY_STORAGE_KEY = 'lumina_gemini_api_key';
+
 export default function VideoStudioPage() {
   const { user, signOut } = useAuth();
   const { state, result, error, isRunning, generate, reset } = useVideoPipeline();
@@ -33,11 +35,29 @@ export default function VideoStudioPage() {
   const [aspectRatio, setAspectRatio] = useState<'9:16' | '16:9' | '1:1'>('9:16');
   const [duration, setDuration] = useState<5 | 10>(5);
 
+  // API Key — shared with existing Studio (same localStorage key)
+  const [apiKey, setApiKey] = useState<string>(
+    () => localStorage.getItem(API_KEY_STORAGE_KEY) ?? '',
+  );
+  const [showApiKeyBar, setShowApiKeyBar] = useState<boolean>(
+    () => !localStorage.getItem(API_KEY_STORAGE_KEY),
+  );
+  const [apiKeyInput, setApiKeyInput] = useState<string>(
+    () => localStorage.getItem(API_KEY_STORAGE_KEY) ?? '',
+  );
+
   const voice = selectedModel ? VOICE_MAP[selectedModel.id] : null;
-  const canGenerate = selectedModel && !isRunning;
+  const canGenerate = selectedModel && apiKey && !isRunning;
+
+  function handleSaveApiKey() {
+    const trimmed = apiKeyInput.trim();
+    localStorage.setItem(API_KEY_STORAGE_KEY, trimmed);
+    setApiKey(trimmed);
+    if (trimmed) setShowApiKeyBar(false);
+  }
 
   function handleGenerate() {
-    if (!selectedModel) return;
+    if (!selectedModel || !apiKey) return;
 
     const request: VideoGenerationRequest = {
       modelId: selectedModel.id,
@@ -60,7 +80,7 @@ export default function VideoStudioPage() {
       };
     }
 
-    generate(request);
+    generate(request, apiKey);
   }
 
   return (
@@ -93,6 +113,13 @@ export default function VideoStudioPage() {
           </a>
           <button
             type="button"
+            onClick={() => setShowApiKeyBar(prev => !prev)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-900 text-gray-400 text-xs font-medium hover:border-gray-600 hover:text-gray-200 transition-colors duration-200"
+          >
+            API Key
+          </button>
+          <button
+            type="button"
             onClick={signOut}
             className="px-3 py-1.5 rounded-lg border border-gray-800 text-gray-600 text-xs hover:text-gray-400 hover:border-gray-700 transition-colors duration-200"
           >
@@ -100,6 +127,31 @@ export default function VideoStudioPage() {
           </button>
         </div>
       </header>
+
+      {/* ── API Key bar ── */}
+      {showApiKeyBar && (
+        <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-800 bg-gray-950 shrink-0">
+          <label htmlFor="video-api-key" className="text-xs text-gray-400 whitespace-nowrap">
+            Gemini API Key
+          </label>
+          <input
+            id="video-api-key"
+            type="password"
+            value={apiKeyInput}
+            onChange={e => setApiKeyInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSaveApiKey()}
+            placeholder="AIza…"
+            className="flex-1 rounded-lg bg-gray-900 border border-gray-800 px-3 py-1.5 text-xs text-gray-200 placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={handleSaveApiKey}
+            className="px-4 py-1.5 rounded-lg bg-cyan-500 text-gray-950 text-xs font-semibold hover:bg-cyan-400 transition-colors"
+          >
+            Save
+          </button>
+        </div>
+      )}
 
       {/* ── Main ── */}
       <main className="flex flex-1 overflow-hidden">
@@ -193,7 +245,7 @@ export default function VideoStudioPage() {
                 : 'bg-gray-800 text-gray-600 cursor-not-allowed'
             }`}
           >
-            {isRunning ? 'Generating…' : 'Generate Video'}
+            {isRunning ? 'Generating…' : !apiKey ? 'Set API Key First' : 'Generate Video'}
           </button>
 
           {isRunning && (
