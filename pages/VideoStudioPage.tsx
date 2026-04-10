@@ -12,8 +12,9 @@ import { useVideoPipeline } from '../hooks/useVideoPipeline';
 import { VideoModelSelector } from '../components/video/ModelSelector';
 import { FormatSelector } from '../components/video/FormatSelector';
 import { TimelineEditor } from '../components/video/TimelineEditor';
-import { NarrationInput } from '../components/video/NarrationInput';
+import { GarmentUpload } from '../components/video/GarmentUpload';
 import { PreviewPanel } from '../components/video/PreviewPanel';
+import { VOICE_MAP } from '../data/video/voiceMap';
 import type { AgencyModel } from '../data/agencyModels';
 import type { FormatId } from '../types/video';
 
@@ -24,7 +25,7 @@ export default function VideoStudioPage() {
   const {
     timeline, isRunning, error,
     totalDuration, completedCuts, totalCuts,
-    initTimeline, updateCut, moveCut, removeCut, generate, reset,
+    initTimeline, updateCut, moveCut, removeCut, setGarmentImage, generate, reset,
   } = useVideoPipeline();
 
   const [selectedModel, setSelectedModel] = useState<AgencyModel | null>(null);
@@ -123,6 +124,33 @@ export default function VideoStudioPage() {
             </div>
           </div>
 
+          {/* Garment upload */}
+          <GarmentUpload
+            image={timeline?.garmentImage ?? null}
+            onUpload={(img) => setGarmentImage(img)}
+            onClear={() => setGarmentImage(undefined)}
+            disabled={isRunning}
+          />
+
+          {/* Narration toggle */}
+          {selectedModel && (
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-semibold text-gray-400 tracking-wider">NARRATION</span>
+                {selectedModel && VOICE_MAP[selectedModel.id] && (
+                  <span className="text-[10px] text-gray-600 ml-2">{VOICE_MAP[selectedModel.id].name}</span>
+                )}
+                {selectedModel && !VOICE_MAP[selectedModel.id] && (
+                  <span className="text-[10px] text-gray-600 ml-2">No voice</span>
+                )}
+              </div>
+              <button type="button" onClick={() => setNarrationEnabled(!narrationEnabled)}
+                className={`w-8 h-4 rounded-full transition-colors duration-200 relative ${narrationEnabled ? 'bg-cyan-500' : 'bg-gray-700'}`}>
+                <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform duration-200 ${narrationEnabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+          )}
+
           {/* Timeline */}
           {timeline && (
             <TimelineEditor
@@ -130,18 +158,10 @@ export default function VideoStudioPage() {
               onUpdateCut={updateCut}
               onRemoveCut={removeCut}
               onMoveCut={moveCut}
+              narrationEnabled={narrationEnabled && !!selectedModel && !!VOICE_MAP[selectedModel.id]}
               disabled={isRunning}
             />
           )}
-
-          {/* Narration toggle */}
-          <NarrationInput
-            modelId={selectedModel?.id ?? null}
-            enabled={narrationEnabled}
-            text=""
-            onToggle={setNarrationEnabled}
-            onTextChange={() => {}}
-          />
 
           {/* Duration info */}
           {timeline && (

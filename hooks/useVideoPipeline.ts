@@ -117,6 +117,10 @@ export function useVideoPipeline() {
     }
   }, [timeline]);
 
+  const setGarmentImage = useCallback((image: string | undefined) => {
+    setTimeline(prev => prev ? { ...prev, garmentImage: image } : prev);
+  }, []);
+
   const totalDuration = timeline?.cuts.reduce((sum, c) => sum + c.duration, 0) ?? 0;
   const completedCuts = timeline?.cuts.filter(c => c.status === 'done').length ?? 0;
   const totalCuts = timeline?.cuts.length ?? 0;
@@ -133,6 +137,7 @@ export function useVideoPipeline() {
     moveCut,
     removeCut,
     addCut,
+    setGarmentImage,
     generate,
     reset,
   };

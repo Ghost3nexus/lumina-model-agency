@@ -10,6 +10,7 @@ interface Props {
   onUpdateCut: (cutId: string, updates: Partial<TimelineCut>) => void;
   onRemoveCut: (cutId: string) => void;
   onMoveCut: (from: number, to: number) => void;
+  narrationEnabled?: boolean;
   disabled?: boolean;
 }
 
@@ -21,7 +22,7 @@ const STATUS_ICON: Record<string, string> = {
   error: '\u274C',
 };
 
-export function TimelineEditor({ cuts, onUpdateCut, onRemoveCut, onMoveCut, disabled }: Props) {
+export function TimelineEditor({ cuts, onUpdateCut, onRemoveCut, onMoveCut, narrationEnabled, disabled }: Props) {
   const totalDuration = cuts.reduce((s, c) => s + c.duration, 0);
 
   return (
@@ -77,6 +78,32 @@ export function TimelineEditor({ cuts, onUpdateCut, onRemoveCut, onMoveCut, disa
                     <option key={m.id} value={m.id}>{m.label}</option>
                   ))}
                 </select>
+              </div>
+            )}
+
+            {/* Narration text */}
+            {!disabled && narrationEnabled && (
+              <div className="mt-1.5">
+                <input
+                  type="text"
+                  value={cut.narrationText ?? ''}
+                  onChange={e => onUpdateCut(cut.id, { narrationText: e.target.value })}
+                  placeholder="Narration…"
+                  className="w-full rounded bg-gray-900 border border-gray-800 px-2 py-1 text-[10px] text-gray-300 placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none"
+                />
+              </div>
+            )}
+
+            {/* Text overlay */}
+            {!disabled && (
+              <div className="mt-1.5">
+                <input
+                  type="text"
+                  value={cut.textOverlay ?? ''}
+                  onChange={e => onUpdateCut(cut.id, { textOverlay: e.target.value })}
+                  placeholder="Text overlay…"
+                  className="w-full rounded bg-gray-900 border border-gray-800 px-2 py-1 text-[10px] text-gray-300 placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none"
+                />
               </div>
             )}
 
