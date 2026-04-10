@@ -5,7 +5,9 @@
  * Used by klingService.ts for I2V generation.
  */
 
-const REPLICATE_API = 'https://api.replicate.com/v1';
+// Dev: proxied via Vite (/api/replicate → api.replicate.com)
+// Prod: direct API (needs server-side proxy — Phase 2)
+const REPLICATE_API = import.meta.env.DEV ? '/api/replicate/v1' : 'https://api.replicate.com/v1';
 
 function getToken(): string {
   const token = import.meta.env.VITE_REPLICATE_API_TOKEN || import.meta.env.VITE_REPLICATE_API_KEY;

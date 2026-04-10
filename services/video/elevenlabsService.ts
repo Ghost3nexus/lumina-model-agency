@@ -5,7 +5,7 @@
  * Returns audio as a blob URL for playback/download.
  */
 
-const ELEVENLABS_API = 'https://api.elevenlabs.io/v1';
+const ELEVENLABS_API = import.meta.env.DEV ? '/api/elevenlabs/v1' : 'https://api.elevenlabs.io/v1';
 const MODEL_ID = 'eleven_multilingual_v2';
 
 function getApiKey(): string {

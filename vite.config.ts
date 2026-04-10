@@ -16,5 +16,19 @@ export default defineConfig({
   },
   build: {
     target: 'esnext'
+  },
+  server: {
+    proxy: {
+      '/api/replicate': {
+        target: 'https://api.replicate.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/replicate/, ''),
+      },
+      '/api/elevenlabs': {
+        target: 'https://api.elevenlabs.io',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/elevenlabs/, ''),
+      },
+    },
   }
 })
