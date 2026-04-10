@@ -26,13 +26,16 @@ export default function VideoStudioPage() {
   const {
     timeline, isRunning, error,
     totalDuration, completedCuts, totalCuts,
-    initTimeline, updateCut, moveCut, removeCut, setGarmentImage, setColorPreset, generate, reset,
+    initTimeline, updateCut, moveCut, removeCut, setGarmentImage, setColorPreset,
+    generateAIScript, isGeneratingScript, scriptMeta,
+    generate, reset,
   } = useVideoPipeline();
 
   const [selectedModel, setSelectedModel] = useState<AgencyModel | null>(null);
   const [selectedFormat, setSelectedFormat] = useState<FormatId | null>(null);
   const [aspectRatio, setAspectRatio] = useState<'9:16' | '16:9' | '1:1'>('9:16');
   const [narrationEnabled, setNarrationEnabled] = useState(false);
+  const [creativeIntent, setCreativeIntent] = useState('');
 
   // API Key
   const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem(API_KEY_STORAGE_KEY) ?? '');
@@ -124,6 +127,43 @@ export default function VideoStudioPage() {
               ))}
             </div>
           </div>
+
+          {/* AI Script Generation */}
+          {timeline && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-400 tracking-wider mb-2">
+                AI SCRIPT
+              </label>
+              <textarea
+                value={creativeIntent}
+                onChange={e => setCreativeIntent(e.target.value)}
+                placeholder="What do you want to create? (e.g. RINKAの朝支度GRWM、sacai×Dickies×Dr.Martensのストリートコーデ、下北沢ロケ)"
+                rows={3}
+                className="w-full rounded-lg bg-gray-900 border border-gray-800 px-3 py-2 text-xs text-gray-200 placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none resize-none"
+              />
+              <button
+                type="button"
+                onClick={() => generateAIScript(creativeIntent, apiKey)}
+                disabled={!creativeIntent.trim() || !apiKey || isGeneratingScript}
+                className={`w-full mt-2 py-2 rounded-lg text-xs font-semibold tracking-wider transition-all duration-200 ${
+                  creativeIntent.trim() && apiKey && !isGeneratingScript
+                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/40 hover:bg-purple-500/30'
+                    : 'bg-gray-800 text-gray-600 cursor-not-allowed'
+                }`}
+              >
+                {isGeneratingScript ? 'Generating script…' : 'Generate Script with AI'}
+              </button>
+
+              {/* Script meta */}
+              {scriptMeta && (
+                <div className="mt-2 rounded-lg border border-gray-800 bg-gray-900/50 p-2 space-y-1">
+                  <p className="text-[10px] text-cyan-400 font-semibold">{scriptMeta.title}</p>
+                  <p className="text-[10px] text-gray-500">BGM: {scriptMeta.bgm}</p>
+                  <p className="text-[10px] text-gray-600 break-all">{scriptMeta.hashtags}</p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Garment upload */}
           <GarmentUpload

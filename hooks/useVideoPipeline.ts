@@ -4,7 +4,9 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { generateTimeline } from '../services/video/pipeline';
+import { generateScript, scriptToTimelineCuts } from '../services/video/scriptGenerator';
 import { VIDEO_FORMATS } from '../data/video/formats';
+import { AGENCY_MODELS } from '../data/agencyModels';
 import type { VideoTimeline, TimelineCut, FormatId, CutStatus } from '../types/video';
 
 /** Create a fresh timeline from a format template */
@@ -126,6 +128,36 @@ export function useVideoPipeline() {
     setTimeline(prev => prev ? { ...prev, colorPresetId: presetId } : prev);
   }, []);
 
+  const [isGeneratingScript, setIsGeneratingScript] = useState(false);
+  const [scriptMeta, setScriptMeta] = useState<{ title: string; bgm: string; hashtags: string } | null>(null);
+
+  /** AI台本生成: intent → 全カットのプロンプトを自動生成 */
+  const generateAIScript = useCallback(async (intent: string, apiKey: string) => {
+    if (!timeline) return;
+    const format = VIDEO_FORMATS.find(f => f.id === timeline.formatId);
+    const model = AGENCY_MODELS.find(m => m.id === timeline.modelId);
+    if (!format || !model) return;
+
+    setIsGeneratingScript(true);
+    setError(null);
+
+    try {
+      const script = await generateScript({ model, format, intent, apiKey });
+      const cuts = scriptToTimelineCuts(script);
+
+      setTimeline(prev => prev ? { ...prev, cuts } : prev);
+      setScriptMeta({
+        title: script.title,
+        bgm: script.bgmSuggestion,
+        hashtags: script.hashtagSuggestion,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Script generation failed');
+    } finally {
+      setIsGeneratingScript(false);
+    }
+  }, [timeline]);
+
   const totalDuration = timeline?.cuts.reduce((sum, c) => sum + c.duration, 0) ?? 0;
   const completedCuts = timeline?.cuts.filter(c => c.status === 'done').length ?? 0;
   const totalCuts = timeline?.cuts.length ?? 0;
@@ -144,6 +176,9 @@ export function useVideoPipeline() {
     addCut,
     setGarmentImage,
     setColorPreset,
+    generateAIScript,
+    isGeneratingScript,
+    scriptMeta,
     generate,
     reset,
   };
