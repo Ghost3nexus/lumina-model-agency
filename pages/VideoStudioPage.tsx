@@ -15,6 +15,7 @@ import { TimelineEditor } from '../components/video/TimelineEditor';
 import { GarmentUpload } from '../components/video/GarmentUpload';
 import { PreviewPanel } from '../components/video/PreviewPanel';
 import { VOICE_MAP } from '../data/video/voiceMap';
+import { COLOR_PRESETS } from '../data/video/colorPresets';
 import type { AgencyModel } from '../data/agencyModels';
 import type { FormatId } from '../types/video';
 
@@ -25,7 +26,7 @@ export default function VideoStudioPage() {
   const {
     timeline, isRunning, error,
     totalDuration, completedCuts, totalCuts,
-    initTimeline, updateCut, moveCut, removeCut, setGarmentImage, generate, reset,
+    initTimeline, updateCut, moveCut, removeCut, setGarmentImage, setColorPreset, generate, reset,
   } = useVideoPipeline();
 
   const [selectedModel, setSelectedModel] = useState<AgencyModel | null>(null);
@@ -131,6 +132,23 @@ export default function VideoStudioPage() {
             onClear={() => setGarmentImage(undefined)}
             disabled={isRunning}
           />
+
+          {/* Color Grading */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 tracking-wider mb-2">COLOR GRADE</label>
+            <div className="flex flex-wrap gap-1.5">
+              {COLOR_PRESETS.map(preset => (
+                <button key={preset.id} type="button" onClick={() => setColorPreset(preset.id)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-medium transition-colors ${
+                    (timeline?.colorPresetId ?? 'none') === preset.id
+                      ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40'
+                      : 'bg-gray-900 text-gray-500 border border-gray-800 hover:border-gray-600'
+                  }`}>
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Narration toggle */}
           {selectedModel && (

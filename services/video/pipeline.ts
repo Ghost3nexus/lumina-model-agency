@@ -8,8 +8,11 @@
 import { generateStill } from './stillGenerator';
 import { generateVideo, cancelPrediction } from './klingService';
 import { generateSpeech } from './elevenlabsService';
+import { applyTextOverlay } from './textOverlay';
+import { applyColorGrade } from './colorGrade';
 import { AGENCY_MODELS } from '../../data/agencyModels';
 import { getMotion, DEFAULT_NEGATIVE_PROMPT } from '../../data/video/motionDictionary';
+import { COLOR_PRESETS } from '../../data/video/colorPresets';
 import { VOICE_MAP } from '../../data/video/voiceMap';
 import type { TimelineCut, CutGenerationRequest, CutStatus } from '../../types/video';
 
@@ -28,13 +31,26 @@ export async function generateCut(
 
   // Step 1: Still
   onProgress?.('generating-still');
-  const stillImage = await generateStill({
+  let stillImage = await generateStill({
     model,
     scenePrompt: request.stillPrompt,
     garmentImage: request.garmentImage,
     aspectRatio: request.aspectRatio,
     apiKey,
   });
+
+  // Step 1b: Color grading (baked into still)
+  if (request.colorPresetId && request.colorPresetId !== 'none') {
+    const preset = COLOR_PRESETS.find(p => p.id === request.colorPresetId);
+    if (preset) {
+      stillImage = await applyColorGrade(stillImage, preset);
+    }
+  }
+
+  // Step 1c: Text overlay (baked into still → appears in video)
+  if (request.textOverlay?.trim()) {
+    stillImage = await applyTextOverlay(stillImage, { text: request.textOverlay });
+  }
 
   // Step 2: I2V
   onProgress?.('generating-video');
@@ -73,6 +89,7 @@ export async function generateTimeline(
   apiKey: string,
   onCutUpdate: CutCallback,
   garmentImage?: string,
+  colorPresetId?: string,
 ): Promise<void> {
   for (const cut of cuts) {
     const motion = getMotion(cut.motionId);
@@ -85,6 +102,8 @@ export async function generateTimeline(
       duration: cut.duration,
       aspectRatio,
       garmentImage,
+      textOverlay: cut.textOverlay,
+      colorPresetId: cut.colorPresetId || colorPresetId,
     };
 
     // Add narration if cut has text and model has voice

@@ -57,6 +57,7 @@ export interface TimelineCut {
   stillPrompt: string;
   textOverlay?: string;
   narrationText?: string;
+  colorPresetId?: string;    // per-cut or inherited from timeline
   // Results
   status: CutStatus;
   stillImage?: string;       // base64
@@ -71,6 +72,7 @@ export interface VideoTimeline {
   aspectRatio: '9:16' | '16:9' | '1:1';
   cuts: TimelineCut[];
   garmentImage?: string;     // base64 data URL
+  colorPresetId?: string;    // global color grade for all cuts
 }
 
 // ─── Pipeline ────────────────────────────────────────────────────────────────
@@ -94,6 +96,8 @@ export interface CutGenerationRequest {
   duration: 5 | 10;
   aspectRatio: '9:16' | '16:9' | '1:1';
   garmentImage?: string;
+  textOverlay?: string;
+  colorPresetId?: string;
   narration?: {
     text: string;
     voiceId: string;

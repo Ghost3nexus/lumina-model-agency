@@ -97,6 +97,7 @@ export function useVideoPipeline() {
           updateCut(cutId, { status, ...data });
         },
         timeline.garmentImage,
+        timeline.colorPresetId,
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -121,6 +122,10 @@ export function useVideoPipeline() {
     setTimeline(prev => prev ? { ...prev, garmentImage: image } : prev);
   }, []);
 
+  const setColorPreset = useCallback((presetId: string) => {
+    setTimeline(prev => prev ? { ...prev, colorPresetId: presetId } : prev);
+  }, []);
+
   const totalDuration = timeline?.cuts.reduce((sum, c) => sum + c.duration, 0) ?? 0;
   const completedCuts = timeline?.cuts.filter(c => c.status === 'done').length ?? 0;
   const totalCuts = timeline?.cuts.length ?? 0;
@@ -138,6 +143,7 @@ export function useVideoPipeline() {
     removeCut,
     addCut,
     setGarmentImage,
+    setColorPreset,
     generate,
     reset,
   };
