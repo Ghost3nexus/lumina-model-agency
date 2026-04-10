@@ -1,68 +1,107 @@
 /**
- * types/video.ts — LUMINA VIDEO STUDIO type definitions
+ * types/video.ts — LUMINA VIDEO STUDIO v2 type definitions
+ *
+ * Multi-clip timeline architecture based on viral structure analysis.
  */
+
+// ─── Format & Cut ────────────────────────────────────────────────────────────
+
+export type FormatId = 'grwm' | 'outfit-transition' | 'lookbook' | 'product-showcase' | 'editorial';
+
+export interface VideoFormat {
+  id: FormatId;
+  label: string;
+  description: string;
+  durationRange: { min: number; max: number }; // seconds
+  cutRange: { min: number; max: number };
+  defaultCuts: CutTemplate[];
+}
+
+export type CutRole =
+  | 'hook' | 'prep' | 'item' | 'wear' | 'accessory'
+  | 'complete' | 'street' | 'closing'
+  | 'flatlay' | 'detail' | 'product' | 'transition'
+  | 'atmosphere' | 'portrait';
+
+export interface CutTemplate {
+  role: CutRole;
+  label: string;
+  duration: number;          // seconds (5 or 10)
+  camera: string;            // e.g. "selfie", "mirror-full", "closeup"
+  defaultMotionId: string;   // from motion dictionary
+  stillPromptHint: string;   // scene hint for Gemini
+  textOverlay?: string;      // optional default text
+}
+
+// ─── Motion Dictionary ───────────────────────────────────────────────────────
+
+export interface MotionEntry {
+  id: string;
+  label: string;
+  category: 'hook' | 'prep' | 'wear' | 'show' | 'street' | 'product';
+  prompt: string;            // I2V prompt for Kling
+}
+
+// ─── Timeline (multi-clip) ───────────────────────────────────────────────────
+
+export type CutStatus = 'pending' | 'generating-still' | 'generating-video' | 'done' | 'error';
+
+export interface TimelineCut {
+  id: string;               // unique per cut
+  index: number;
+  role: CutRole;
+  label: string;
+  duration: 5 | 10;
+  motionId: string;
+  motionPromptOverride?: string;
+  stillPrompt: string;
+  textOverlay?: string;
+  narrationText?: string;
+  // Results
+  status: CutStatus;
+  stillImage?: string;       // base64
+  videoUrl?: string;         // mp4 URL
+  audioUrl?: string;         // mp3 blob URL
+  error?: string;
+}
+
+export interface VideoTimeline {
+  formatId: FormatId;
+  modelId: string;
+  aspectRatio: '9:16' | '16:9' | '1:1';
+  cuts: TimelineCut[];
+  garmentImage?: string;     // base64 data URL
+}
+
+// ─── Pipeline ────────────────────────────────────────────────────────────────
 
 export type PipelineStep = 'still' | 'i2v' | 'narration';
 export type StepStatus = 'idle' | 'running' | 'done' | 'error';
 
 export interface StepState {
   status: StepStatus;
-  result?: string;   // base64 (still) or URL (video/audio)
+  result?: string;
   error?: string;
-  progress?: string; // e.g. "polling…"
+  progress?: string;
 }
 
-export interface VideoPipelineState {
-  currentStep: PipelineStep | null;
-  steps: Record<PipelineStep, StepState>;
-}
-
-export interface VideoGenerationRequest {
+/** Per-cut generation request */
+export interface CutGenerationRequest {
   modelId: string;
-  scene: {
-    presetId: string;
-    customPrompt?: string;
-  };
-  motion: {
-    presetId: string;
-    customPrompt?: string;
-    negativePrompt?: string;
-  };
+  stillPrompt: string;
+  motionPrompt: string;
+  negativePrompt?: string;
+  duration: 5 | 10;
+  aspectRatio: '9:16' | '16:9' | '1:1';
+  garmentImage?: string;
   narration?: {
     text: string;
     voiceId: string;
     stability?: number;
   };
-  garmentImage?: string; // base64 data URL (optional)
-  duration?: 5 | 10;    // seconds — Kling supports 5 or 10
-  aspectRatio?: '16:9' | '9:16' | '1:1';
 }
 
-export interface VideoGenerationResult {
-  stillImage: string;      // base64 data URL
-  videoUrl?: string;       // mp4 URL from Replicate
-  audioUrl?: string;       // mp3 blob URL
-  metadata: {
-    modelId: string;
-    duration: number;
-    aspectRatio: string;
-    generatedAt: string;   // ISO date
-  };
-}
-
-export interface MotionPreset {
-  id: string;
-  label: string;
-  prompt: string;
-  icon?: string;
-}
-
-export interface ScenePreset {
-  id: string;
-  label: string;
-  description: string;
-  stillPromptHint?: string; // hint appended to still generation prompt
-}
+// ─── Voice ───────────────────────────────────────────────────────────────────
 
 export interface VoiceMapping {
   voiceId: string;

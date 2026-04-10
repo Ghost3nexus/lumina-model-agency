@@ -1,106 +1,119 @@
 /**
- * pipeline.ts — Video generation pipeline orchestration
+ * pipeline.ts — Video generation pipeline orchestration (v2)
  *
- * Coordinates the 3-step pipeline: Still → I2V → Narration.
- * Each step can be run independently or as a full pipeline.
+ * Supports multi-clip timeline: generates each cut's still → I2V → narration.
+ * Cuts are processed sequentially to avoid API rate limits.
  */
 
 import { generateStill } from './stillGenerator';
 import { generateVideo, cancelPrediction } from './klingService';
 import { generateSpeech } from './elevenlabsService';
 import { AGENCY_MODELS } from '../../data/agencyModels';
-import { MOTION_PRESETS, DEFAULT_NEGATIVE_PROMPT } from '../../data/video/motionPresets';
-import { SCENE_PRESETS } from '../../data/video/scenePresets';
+import { getMotion, DEFAULT_NEGATIVE_PROMPT } from '../../data/video/motionDictionary';
 import { VOICE_MAP } from '../../data/video/voiceMap';
-import type {
-  VideoGenerationRequest,
-  VideoGenerationResult,
-  PipelineStep,
-} from '../../types/video';
+import type { TimelineCut, CutGenerationRequest, CutStatus } from '../../types/video';
 
-export type PipelineCallback = (step: PipelineStep, status: string) => void;
+export type CutCallback = (cutId: string, status: CutStatus, data?: { stillImage?: string; videoUrl?: string; audioUrl?: string; error?: string }) => void;
 
 /**
- * Run the full pipeline (or partial, based on request).
+ * Generate a single cut (still → I2V → optional narration).
  */
-export async function runPipeline(
-  request: VideoGenerationRequest,
+export async function generateCut(
+  request: CutGenerationRequest,
   apiKey: string,
-  onProgress?: PipelineCallback,
-): Promise<VideoGenerationResult> {
+  onProgress?: (status: CutStatus) => void,
+): Promise<{ stillImage: string; videoUrl?: string; audioUrl?: string }> {
   const model = AGENCY_MODELS.find(m => m.id === request.modelId);
   if (!model) throw new Error(`Model not found: ${request.modelId}`);
 
-  // Resolve presets
-  const scenePreset = SCENE_PRESETS.find(s => s.id === request.scene.presetId);
-  const motionPreset = MOTION_PRESETS.find(m => m.id === request.motion.presetId);
-
-  const scenePrompt = request.scene.customPrompt
-    || [scenePreset?.stillPromptHint, request.scene.customPrompt].filter(Boolean).join('. ')
-    || 'fashion photography, natural setting';
-
-  // ── Step 1: Still Image ──
-  onProgress?.('still', 'generating');
-
+  // Step 1: Still
+  onProgress?.('generating-still');
   const stillImage = await generateStill({
     model,
-    scenePrompt,
+    scenePrompt: request.stillPrompt,
     garmentImage: request.garmentImage,
     aspectRatio: request.aspectRatio,
     apiKey,
   });
 
-  onProgress?.('still', 'done');
-
-  const result: VideoGenerationResult = {
-    stillImage,
-    metadata: {
-      modelId: request.modelId,
-      duration: request.duration ?? 5,
-      aspectRatio: request.aspectRatio ?? '9:16',
-      generatedAt: new Date().toISOString(),
+  // Step 2: I2V
+  onProgress?.('generating-video');
+  const i2vResult = await generateVideo(
+    {
+      startImage: stillImage,
+      prompt: request.motionPrompt,
+      negativePrompt: request.negativePrompt ?? DEFAULT_NEGATIVE_PROMPT,
+      duration: request.duration,
+      aspectRatio: request.aspectRatio,
     },
-  };
+    () => onProgress?.('generating-video'),
+  );
 
-  // ── Step 2: I2V (optional — skip if no motion preset) ──
-  if (request.motion.presetId !== 'none') {
-    onProgress?.('i2v', 'submitting');
-
-    const motionPrompt = request.motion.customPrompt
-      || motionPreset?.prompt
-      || 'subtle natural movement';
-
-    const i2vResult = await generateVideo(
-      {
-        startImage: stillImage,
-        prompt: motionPrompt,
-        negativePrompt: request.motion.negativePrompt ?? DEFAULT_NEGATIVE_PROMPT,
-        duration: request.duration ?? 5,
-        aspectRatio: request.aspectRatio ?? '9:16',
-      },
-      (status) => onProgress?.('i2v', status),
-    );
-
-    result.videoUrl = i2vResult.videoUrl;
-    onProgress?.('i2v', 'done');
-  }
-
-  // ── Step 3: Narration (optional) ──
+  // Step 3: Narration (optional)
+  let audioUrl: string | undefined;
   if (request.narration?.text && request.narration?.voiceId) {
-    onProgress?.('narration', 'generating');
-
-    const voice = VOICE_MAP[request.modelId];
     const ttsResult = await generateSpeech({
       text: request.narration.text,
-      voiceId: request.narration.voiceId || voice?.voiceId || '',
+      voiceId: request.narration.voiceId,
       stability: request.narration.stability,
     });
-
-    result.audioUrl = ttsResult.audioUrl;
-    onProgress?.('narration', 'done');
+    audioUrl = ttsResult.audioUrl;
   }
 
-  return result;
+  return { stillImage, videoUrl: i2vResult.videoUrl, audioUrl };
+}
+
+/**
+ * Generate all cuts in a timeline sequentially.
+ */
+export async function generateTimeline(
+  cuts: TimelineCut[],
+  modelId: string,
+  aspectRatio: '9:16' | '16:9' | '1:1',
+  apiKey: string,
+  onCutUpdate: CutCallback,
+  garmentImage?: string,
+): Promise<void> {
+  for (const cut of cuts) {
+    const motion = getMotion(cut.motionId);
+    const motionPrompt = cut.motionPromptOverride || motion?.prompt || 'subtle natural movement';
+
+    const request: CutGenerationRequest = {
+      modelId,
+      stillPrompt: cut.stillPrompt,
+      motionPrompt,
+      duration: cut.duration,
+      aspectRatio,
+      garmentImage,
+    };
+
+    // Add narration if cut has text and model has voice
+    if (cut.narrationText) {
+      const voice = VOICE_MAP[modelId];
+      if (voice) {
+        request.narration = {
+          text: cut.narrationText,
+          voiceId: voice.voiceId,
+        };
+      }
+    }
+
+    try {
+      const result = await generateCut(request, apiKey, (status) => {
+        onCutUpdate(cut.id, status);
+      });
+
+      onCutUpdate(cut.id, 'done', {
+        stillImage: result.stillImage,
+        videoUrl: result.videoUrl,
+        audioUrl: result.audioUrl,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      onCutUpdate(cut.id, 'error', { error: message });
+      // Continue with next cut instead of aborting entire timeline
+    }
+  }
 }
 
 export { cancelPrediction };

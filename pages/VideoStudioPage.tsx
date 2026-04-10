@@ -1,53 +1,41 @@
 /**
- * VideoStudioPage.tsx — LUMINA VIDEO STUDIO
+ * VideoStudioPage.tsx — LUMINA VIDEO STUDIO v2
  *
- * 3-step pipeline: Still Image → I2V Video → Narration
- * Layout mirrors GenerationPage: left panel (controls) + right panel (preview)
+ * Format-based multi-clip pipeline.
+ * Left: Format → Model → Timeline editor
+ * Right: Preview grid of generated cuts
  */
 
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useVideoPipeline } from '../hooks/useVideoPipeline';
 import { VideoModelSelector } from '../components/video/ModelSelector';
-import { SceneConfigurator } from '../components/video/SceneConfigurator';
-import { MotionSelector } from '../components/video/MotionSelector';
+import { FormatSelector } from '../components/video/FormatSelector';
+import { TimelineEditor } from '../components/video/TimelineEditor';
 import { NarrationInput } from '../components/video/NarrationInput';
-import { PipelineStatus } from '../components/video/PipelineStatus';
 import { PreviewPanel } from '../components/video/PreviewPanel';
-import { VOICE_MAP } from '../data/video/voiceMap';
 import type { AgencyModel } from '../data/agencyModels';
-import type { VideoGenerationRequest } from '../types/video';
+import type { FormatId } from '../types/video';
 
 const API_KEY_STORAGE_KEY = 'lumina_gemini_api_key';
 
 export default function VideoStudioPage() {
   const { user, signOut } = useAuth();
-  const { state, result, error, isRunning, generate, reset } = useVideoPipeline();
+  const {
+    timeline, isRunning, error,
+    totalDuration, completedCuts, totalCuts,
+    initTimeline, updateCut, moveCut, removeCut, generate, reset,
+  } = useVideoPipeline();
 
-  // ── Local state ──
   const [selectedModel, setSelectedModel] = useState<AgencyModel | null>(null);
-  const [scenePresetId, setScenePresetId] = useState('grwm');
-  const [sceneCustomPrompt, setSceneCustomPrompt] = useState('');
-  const [motionPresetId, setMotionPresetId] = useState('walk');
-  const [motionCustomPrompt, setMotionCustomPrompt] = useState('');
-  const [narrationEnabled, setNarrationEnabled] = useState(false);
-  const [narrationText, setNarrationText] = useState('');
+  const [selectedFormat, setSelectedFormat] = useState<FormatId | null>(null);
   const [aspectRatio, setAspectRatio] = useState<'9:16' | '16:9' | '1:1'>('9:16');
-  const [duration, setDuration] = useState<5 | 10>(5);
+  const [narrationEnabled, setNarrationEnabled] = useState(false);
 
-  // API Key — shared with existing Studio (same localStorage key)
-  const [apiKey, setApiKey] = useState<string>(
-    () => localStorage.getItem(API_KEY_STORAGE_KEY) ?? '',
-  );
-  const [showApiKeyBar, setShowApiKeyBar] = useState<boolean>(
-    () => !localStorage.getItem(API_KEY_STORAGE_KEY),
-  );
-  const [apiKeyInput, setApiKeyInput] = useState<string>(
-    () => localStorage.getItem(API_KEY_STORAGE_KEY) ?? '',
-  );
-
-  const voice = selectedModel ? VOICE_MAP[selectedModel.id] : null;
-  const canGenerate = selectedModel && apiKey && !isRunning;
+  // API Key
+  const [apiKey, setApiKey] = useState<string>(() => localStorage.getItem(API_KEY_STORAGE_KEY) ?? '');
+  const [showApiKeyBar, setShowApiKeyBar] = useState<boolean>(() => !localStorage.getItem(API_KEY_STORAGE_KEY));
+  const [apiKeyInput, setApiKeyInput] = useState<string>(() => localStorage.getItem(API_KEY_STORAGE_KEY) ?? '');
 
   function handleSaveApiKey() {
     const trimmed = apiKeyInput.trim();
@@ -56,86 +44,51 @@ export default function VideoStudioPage() {
     if (trimmed) setShowApiKeyBar(false);
   }
 
-  function handleGenerate() {
-    if (!selectedModel || !apiKey) return;
-
-    const request: VideoGenerationRequest = {
-      modelId: selectedModel.id,
-      scene: {
-        presetId: scenePresetId,
-        customPrompt: sceneCustomPrompt || undefined,
-      },
-      motion: {
-        presetId: motionPresetId,
-        customPrompt: motionCustomPrompt || undefined,
-      },
-      duration,
-      aspectRatio,
-    };
-
-    if (narrationEnabled && narrationText.trim() && voice) {
-      request.narration = {
-        text: narrationText.trim(),
-        voiceId: voice.voiceId,
-      };
+  function handleFormatSelect(formatId: FormatId) {
+    setSelectedFormat(formatId);
+    if (selectedModel) {
+      initTimeline(formatId, selectedModel.id, aspectRatio);
     }
-
-    generate(request, apiKey);
   }
+
+  function handleModelSelect(model: AgencyModel) {
+    setSelectedModel(model);
+    if (selectedFormat) {
+      initTimeline(selectedFormat, model.id, aspectRatio);
+    }
+  }
+
+  function handleAspectRatioChange(ratio: '9:16' | '16:9' | '1:1') {
+    setAspectRatio(ratio);
+    if (selectedFormat && selectedModel) {
+      initTimeline(selectedFormat, selectedModel.id, ratio);
+    }
+  }
+
+  const canGenerate = timeline && timeline.cuts.length > 0 && apiKey && !isRunning;
 
   return (
     <div className="h-screen bg-[#050508] text-gray-100 flex flex-col overflow-hidden">
-      {/* ── Header ── */}
+      {/* Header */}
       <header className="flex items-center justify-between px-6 py-3 border-b border-gray-800 shrink-0">
         <div className="flex items-center gap-2.5">
-          <span className="text-base font-bold tracking-tight text-gray-100">
-            LUMINA VIDEO STUDIO
-          </span>
-          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">
-            Alpha
-          </span>
+          <span className="text-base font-bold tracking-tight text-gray-100">LUMINA VIDEO STUDIO</span>
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">v2</span>
         </div>
         <div className="flex items-center gap-3">
-          {user && (
-            <span className="text-xs text-gray-600 hidden md:inline">{user.email}</span>
-          )}
-          <a
-            href="/"
-            className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider"
-          >
-            AGENCY
-          </a>
-          <a
-            href="/studio"
-            className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider"
-          >
-            STUDIO
-          </a>
-          <button
-            type="button"
-            onClick={() => setShowApiKeyBar(prev => !prev)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-900 text-gray-400 text-xs font-medium hover:border-gray-600 hover:text-gray-200 transition-colors duration-200"
-          >
-            API Key
-          </button>
-          <button
-            type="button"
-            onClick={signOut}
-            className="px-3 py-1.5 rounded-lg border border-gray-800 text-gray-600 text-xs hover:text-gray-400 hover:border-gray-700 transition-colors duration-200"
-          >
-            Logout
-          </button>
+          {user && <span className="text-xs text-gray-600 hidden md:inline">{user.email}</span>}
+          <a href="/" className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider">AGENCY</a>
+          <a href="/studio" className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider">STUDIO</a>
+          <button type="button" onClick={() => setShowApiKeyBar(p => !p)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-700 bg-gray-900 text-gray-400 text-xs font-medium hover:border-gray-600 hover:text-gray-200 transition-colors duration-200">API Key</button>
+          <button type="button" onClick={signOut} className="px-3 py-1.5 rounded-lg border border-gray-800 text-gray-600 text-xs hover:text-gray-400 hover:border-gray-700 transition-colors duration-200">Logout</button>
         </div>
       </header>
 
-      {/* ── API Key bar ── */}
+      {/* API Key bar */}
       {showApiKeyBar && (
         <div className="flex items-center gap-3 px-6 py-3 border-b border-gray-800 bg-gray-950 shrink-0">
-          <label htmlFor="video-api-key" className="text-xs text-gray-400 whitespace-nowrap">
-            Gemini API Key
-          </label>
+          <label className="text-xs text-gray-400 whitespace-nowrap">Gemini API Key</label>
           <input
-            id="video-api-key"
             type="password"
             value={apiKeyInput}
             onChange={e => setApiKeyInput(e.target.value)}
@@ -143,135 +96,89 @@ export default function VideoStudioPage() {
             placeholder="AIza…"
             className="flex-1 rounded-lg bg-gray-900 border border-gray-800 px-3 py-1.5 text-xs text-gray-200 placeholder:text-gray-600 focus:border-cyan-500/50 focus:outline-none"
           />
-          <button
-            type="button"
-            onClick={handleSaveApiKey}
-            className="px-4 py-1.5 rounded-lg bg-cyan-500 text-gray-950 text-xs font-semibold hover:bg-cyan-400 transition-colors"
-          >
-            Save
-          </button>
+          <button type="button" onClick={handleSaveApiKey} className="px-4 py-1.5 rounded-lg bg-cyan-500 text-gray-950 text-xs font-semibold hover:bg-cyan-400 transition-colors">Save</button>
         </div>
       )}
 
-      {/* ── Main ── */}
+      {/* Main */}
       <main className="flex flex-1 overflow-hidden">
-        {/* ── Left Panel: Controls ── */}
+        {/* Left Panel */}
         <div className="w-[380px] border-r border-gray-800 overflow-y-auto p-4 space-y-5 shrink-0">
-          {/* Model Selection */}
-          <VideoModelSelector
-            selectedId={selectedModel?.id ?? null}
-            onSelect={setSelectedModel}
-          />
+          {/* Format */}
+          <FormatSelector selectedId={selectedFormat} onSelect={handleFormatSelect} />
 
-          {/* Scene */}
-          <SceneConfigurator
-            selectedId={scenePresetId}
-            customPrompt={sceneCustomPrompt}
-            onSelectPreset={setScenePresetId}
-            onCustomPromptChange={setSceneCustomPrompt}
-          />
+          {/* Model */}
+          <VideoModelSelector selectedId={selectedModel?.id ?? null} onSelect={handleModelSelect} />
 
-          {/* Motion */}
-          <MotionSelector
-            selectedId={motionPresetId}
-            customPrompt={motionCustomPrompt}
-            onSelectPreset={setMotionPresetId}
-            onCustomPromptChange={setMotionCustomPrompt}
-          />
-
-          {/* Settings row */}
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <label className="block text-[10px] font-semibold text-gray-500 tracking-wider mb-1">
-                ASPECT RATIO
-              </label>
-              <div className="flex gap-1">
-                {(['9:16', '16:9', '1:1'] as const).map(r => (
-                  <button
-                    key={r}
-                    type="button"
-                    onClick={() => setAspectRatio(r)}
-                    className={`flex-1 px-2 py-1.5 rounded text-[10px] font-medium transition-colors ${
-                      aspectRatio === r
-                        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40'
-                        : 'bg-gray-900 text-gray-500 border border-gray-800'
-                    }`}
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex-1">
-              <label className="block text-[10px] font-semibold text-gray-500 tracking-wider mb-1">
-                DURATION
-              </label>
-              <div className="flex gap-1">
-                {([5, 10] as const).map(d => (
-                  <button
-                    key={d}
-                    type="button"
-                    onClick={() => setDuration(d)}
-                    className={`flex-1 px-2 py-1.5 rounded text-[10px] font-medium transition-colors ${
-                      duration === d
-                        ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40'
-                        : 'bg-gray-900 text-gray-500 border border-gray-800'
-                    }`}
-                  >
-                    {d}s
-                  </button>
-                ))}
-              </div>
+          {/* Aspect Ratio */}
+          <div>
+            <label className="block text-[10px] font-semibold text-gray-500 tracking-wider mb-1">ASPECT RATIO</label>
+            <div className="flex gap-1">
+              {(['9:16', '16:9', '1:1'] as const).map(r => (
+                <button key={r} type="button" onClick={() => handleAspectRatioChange(r)}
+                  className={`flex-1 px-2 py-1.5 rounded text-[10px] font-medium transition-colors ${
+                    aspectRatio === r ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/40' : 'bg-gray-900 text-gray-500 border border-gray-800'
+                  }`}>{r}</button>
+              ))}
             </div>
           </div>
 
-          {/* Narration */}
+          {/* Timeline */}
+          {timeline && (
+            <TimelineEditor
+              cuts={timeline.cuts}
+              onUpdateCut={updateCut}
+              onRemoveCut={removeCut}
+              onMoveCut={moveCut}
+              disabled={isRunning}
+            />
+          )}
+
+          {/* Narration toggle */}
           <NarrationInput
             modelId={selectedModel?.id ?? null}
             enabled={narrationEnabled}
-            text={narrationText}
+            text=""
             onToggle={setNarrationEnabled}
-            onTextChange={setNarrationText}
+            onTextChange={() => {}}
           />
 
-          {/* Generate button */}
-          <button
-            type="button"
-            onClick={handleGenerate}
-            disabled={!canGenerate}
+          {/* Duration info */}
+          {timeline && (
+            <div className="text-[10px] text-gray-500">
+              Total: {totalDuration}秒 / {totalCuts}カット
+              {completedCuts > 0 && ` (${completedCuts} done)`}
+            </div>
+          )}
+
+          {/* Generate */}
+          <button type="button" onClick={() => generate(apiKey)} disabled={!canGenerate}
             className={`w-full py-3 rounded-lg text-sm font-semibold tracking-wider transition-all duration-200 ${
-              canGenerate
-                ? 'bg-cyan-500 text-gray-950 hover:bg-cyan-400 active:scale-[0.98]'
-                : 'bg-gray-800 text-gray-600 cursor-not-allowed'
-            }`}
-          >
-            {isRunning ? 'Generating…' : !apiKey ? 'Set API Key First' : 'Generate Video'}
+              canGenerate ? 'bg-cyan-500 text-gray-950 hover:bg-cyan-400 active:scale-[0.98]' : 'bg-gray-800 text-gray-600 cursor-not-allowed'
+            }`}>
+            {isRunning ? `Generating ${completedCuts}/${totalCuts}…` : !apiKey ? 'Set API Key First' : !timeline ? 'Select Format & Model' : 'Generate All Cuts'}
           </button>
 
           {isRunning && (
-            <button
-              type="button"
-              onClick={reset}
-              className="w-full py-2 rounded-lg text-xs text-gray-500 border border-gray-800 hover:border-gray-700 hover:text-gray-400 transition-colors"
-            >
-              Cancel
-            </button>
+            <button type="button" onClick={reset}
+              className="w-full py-2 rounded-lg text-xs text-gray-500 border border-gray-800 hover:border-gray-700 hover:text-gray-400 transition-colors">Cancel</button>
           )}
 
-          {/* Error */}
           {error && (
             <div className="rounded-lg border border-red-500/30 bg-red-500/10 p-3">
               <p className="text-xs text-red-400">{error}</p>
             </div>
           )}
-
-          {/* Pipeline Status */}
-          <PipelineStatus state={state} />
         </div>
 
-        {/* ── Right Panel: Preview ── */}
+        {/* Right Panel */}
         <div className="flex-1 flex flex-col bg-[#030306]">
-          <PreviewPanel result={result} isRunning={isRunning} />
+          <PreviewPanel
+            cuts={timeline?.cuts ?? []}
+            isRunning={isRunning}
+            completedCuts={completedCuts}
+            totalCuts={totalCuts}
+          />
         </div>
       </main>
     </div>

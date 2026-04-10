@@ -1,16 +1,20 @@
 /**
- * PreviewPanel.tsx — Still image / video / audio preview + download
+ * PreviewPanel.tsx — Timeline preview: shows generated stills and videos
  */
 
-import type { VideoGenerationResult } from '../../types/video';
+import type { TimelineCut } from '../../types/video';
 
 interface Props {
-  result: VideoGenerationResult | null;
+  cuts: TimelineCut[];
   isRunning: boolean;
+  completedCuts: number;
+  totalCuts: number;
 }
 
-export function PreviewPanel({ result, isRunning }: Props) {
-  if (isRunning && !result) {
+export function PreviewPanel({ cuts, isRunning, completedCuts, totalCuts }: Props) {
+  const doneCuts = cuts.filter(c => c.stillImage || c.videoUrl);
+
+  if (isRunning && doneCuts.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -18,93 +22,98 @@ export function PreviewPanel({ result, isRunning }: Props) {
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
             <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
           </svg>
-          <span className="text-xs text-gray-500">Generating…</span>
+          <span className="text-xs text-gray-500">Generating cut 1/{totalCuts}…</span>
         </div>
       </div>
     );
   }
 
-  if (!result) {
+  if (doneCuts.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <div className="text-3xl text-gray-800 mb-2">&#9654;</div>
-          <p className="text-xs text-gray-600">Select a model and scene to start</p>
+          <p className="text-xs text-gray-600">Select format and model to start</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col gap-4 p-4 overflow-y-auto">
-      {/* Still image */}
-      {result.stillImage && (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold text-gray-500 tracking-wider">STILL</span>
-            <a
-              href={result.stillImage}
-              download={`still-${result.metadata.modelId}-${Date.now()}.png`}
-              className="text-[10px] text-cyan-400 hover:text-cyan-300"
-            >
-              Download
-            </a>
+    <div className="flex-1 flex flex-col overflow-y-auto">
+      {/* Progress bar */}
+      {isRunning && (
+        <div className="px-4 pt-3">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] text-gray-500">Progress</span>
+            <span className="text-[10px] text-cyan-400">{completedCuts}/{totalCuts}</span>
           </div>
-          <img
-            src={result.stillImage}
-            alt="Generated still"
-            className="w-full rounded-lg border border-gray-800"
-          />
+          <div className="w-full h-1 bg-gray-800 rounded-full">
+            <div
+              className="h-1 bg-cyan-500 rounded-full transition-all duration-500"
+              style={{ width: `${(completedCuts / totalCuts) * 100}%` }}
+            />
+          </div>
         </div>
       )}
 
-      {/* Video */}
-      {result.videoUrl && (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold text-gray-500 tracking-wider">VIDEO</span>
-            <a
-              href={result.videoUrl}
-              download={`video-${result.metadata.modelId}-${Date.now()}.mp4`}
-              className="text-[10px] text-cyan-400 hover:text-cyan-300"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Download
-            </a>
-          </div>
-          <video
-            src={result.videoUrl}
-            controls
-            autoPlay
-            loop
-            muted
-            className="w-full rounded-lg border border-gray-800"
-          />
-        </div>
-      )}
+      {/* Cuts grid */}
+      <div className="p-4 grid grid-cols-2 gap-3">
+        {cuts.map((cut, idx) => (
+          <div key={cut.id} className="rounded-lg border border-gray-800 overflow-hidden bg-gray-900/50">
+            {/* Thumbnail */}
+            {cut.videoUrl ? (
+              <video
+                src={cut.videoUrl}
+                controls
+                muted
+                loop
+                className="w-full aspect-video object-cover"
+              />
+            ) : cut.stillImage ? (
+              <img
+                src={cut.stillImage}
+                alt={cut.label}
+                className="w-full aspect-video object-cover"
+              />
+            ) : (
+              <div className="w-full aspect-video bg-gray-900 flex items-center justify-center">
+                {cut.status === 'generating-still' || cut.status === 'generating-video' ? (
+                  <svg className="w-4 h-4 animate-spin text-cyan-500" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+                    <path d="M22 12a10 10 0 0 0-10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
+                ) : cut.status === 'error' ? (
+                  <span className="text-red-400 text-xs">Error</span>
+                ) : (
+                  <span className="text-gray-700 text-xs">{idx + 1}</span>
+                )}
+              </div>
+            )}
 
-      {/* Audio */}
-      {result.audioUrl && (
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold text-gray-500 tracking-wider">NARRATION</span>
-            <a
-              href={result.audioUrl}
-              download={`narration-${result.metadata.modelId}-${Date.now()}.mp3`}
-              className="text-[10px] text-cyan-400 hover:text-cyan-300"
-            >
-              Download
-            </a>
+            {/* Label */}
+            <div className="px-2 py-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-gray-400 truncate">{idx + 1}. {cut.label}</span>
+                <span className="text-[10px] text-gray-600">{cut.duration}s</span>
+              </div>
+              {/* Download links */}
+              {(cut.stillImage || cut.videoUrl) && (
+                <div className="flex gap-2 mt-1">
+                  {cut.stillImage && (
+                    <a href={cut.stillImage} download={`cut-${idx + 1}-still.png`} className="text-[9px] text-cyan-400 hover:text-cyan-300">Still</a>
+                  )}
+                  {cut.videoUrl && (
+                    <a href={cut.videoUrl} download={`cut-${idx + 1}.mp4`} target="_blank" rel="noopener noreferrer" className="text-[9px] text-cyan-400 hover:text-cyan-300">Video</a>
+                  )}
+                  {cut.audioUrl && (
+                    <a href={cut.audioUrl} download={`cut-${idx + 1}-audio.mp3`} className="text-[9px] text-cyan-400 hover:text-cyan-300">Audio</a>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-          <audio src={result.audioUrl} controls className="w-full" />
-        </div>
-      )}
-
-      {/* Metadata */}
-      <div className="text-[10px] text-gray-600 space-y-0.5">
-        <p>Model: {result.metadata.modelId} | Duration: {result.metadata.duration}s | Ratio: {result.metadata.aspectRatio}</p>
-        <p>Generated: {new Date(result.metadata.generatedAt).toLocaleString('ja-JP')}</p>
+        ))}
       </div>
     </div>
   );
