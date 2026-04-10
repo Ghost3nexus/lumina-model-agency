@@ -220,6 +220,7 @@ export default function AgencyPage() {
             <a href="#influencer" className="text-xs tracking-[0.15em] text-gray-500 hover:text-gray-900 transition-colors uppercase">Influencer</a>
             <a href="#about" className="text-xs tracking-[0.15em] text-gray-500 hover:text-gray-900 transition-colors uppercase">About</a>
             <a href="/studio" className="text-xs tracking-[0.15em] text-gray-400 hover:text-gray-900 transition-colors uppercase">Studio →</a>
+            <a href="/video" className="text-xs tracking-[0.15em] text-gray-400 hover:text-gray-900 transition-colors uppercase">Video →</a>
           </nav>
         </div>
       </header>

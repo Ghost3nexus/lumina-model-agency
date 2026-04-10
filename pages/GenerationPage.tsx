@@ -148,10 +148,16 @@ export default function GenerationPage() {
             <span className="text-xs text-gray-600 hidden md:inline">{user.email}</span>
           )}
           <a
-            href="/agency"
+            href="/"
             className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider"
           >
-            ← AGENCY
+            AGENCY
+          </a>
+          <a
+            href="/video"
+            className="text-xs text-gray-500 hover:text-gray-300 transition-colors tracking-wider"
+          >
+            VIDEO
           </a>
           <button
             type="button"
