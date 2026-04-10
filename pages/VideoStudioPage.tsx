@@ -27,7 +27,7 @@ export default function VideoStudioPage() {
     timeline, isRunning, error,
     totalDuration, completedCuts, totalCuts,
     initTimeline, updateCut, moveCut, removeCut, setGarmentImage, setColorPreset,
-    generateAIScript, isGeneratingScript, scriptMeta,
+    generateAIScript, isGeneratingScript, scriptStatus, scriptMeta,
     generate, reset,
   } = useVideoPipeline();
 
@@ -151,7 +151,7 @@ export default function VideoStudioPage() {
                     : 'bg-gray-800 text-gray-600 cursor-not-allowed'
                 }`}
               >
-                {isGeneratingScript ? 'Generating script…' : 'Generate Script with AI'}
+                {isGeneratingScript ? (scriptStatus ?? 'Generating…') : 'Generate Script with AI'}
               </button>
 
               {/* Script meta */}

@@ -11,6 +11,7 @@
  */
 
 import { createClient, GEN_CONFIG } from '../geminiClient';
+import { researchViralTrends, type ViralResearchResult } from './viralResearch';
 import type { AgencyModel } from '../../data/agencyModels';
 import type { VideoFormat } from '../../types/video';
 import type { TimelineCut } from '../../types/video';
@@ -19,9 +20,13 @@ import { MOTION_DICTIONARY } from '../../data/video/motionDictionary';
 export interface ScriptRequest {
   model: AgencyModel;
   format: VideoFormat;
-  intent: string;        // User's creative brief (e.g. "sacai×Dickies GRWM for Instagram Reels")
+  intent: string;        // User's creative brief
   apiKey: string;
-  includeResearch?: boolean; // Whether to research current trends first
+}
+
+export interface ScriptProgress {
+  stage: 'researching' | 'writing';
+  message: string;
 }
 
 export interface GeneratedScript {
@@ -64,17 +69,56 @@ Editorial: Atmosphere→Model enter→Detail→Portrait→Movement→Detail2→H
 
 /**
  * Generate a full video script using AI.
+ * Step 1: Research current viral trends (web search)
+ * Step 2: Generate script using trends + model profile + format
  */
-export async function generateScript(request: ScriptRequest): Promise<GeneratedScript> {
-  const client = createClient(request.apiKey);
+export async function generateScript(
+  request: ScriptRequest,
+  onProgress?: (progress: ScriptProgress) => void,
+): Promise<GeneratedScript> {
+  // ── Step 1: Viral research ──
+  onProgress?.({ stage: 'researching', message: 'Searching for viral trends…' });
 
+  let research: ViralResearchResult | null = null;
+  try {
+    research = await researchViralTrends(request.apiKey, {
+      format: request.format.label,
+      style: request.model.vibe,
+      region: request.model.category.includes('asia') ? 'Japan' : 'global',
+    });
+  } catch {
+    // If research fails, continue with static knowledge only
+  }
+
+  // ── Step 2: Script generation ──
+  onProgress?.({ stage: 'writing', message: 'Writing script…' });
+
+  const client = createClient(request.apiKey);
   const modelProfile = buildModelProfile(request.model);
   const motionList = MOTION_DICTIONARY.map(m => `${m.id}: ${m.prompt}`).join('\n');
 
-  const prompt = `You are a viral short-form video director specializing in fashion content for Instagram Reels and TikTok.
+  const researchSection = research ? `
+## CURRENT VIRAL TRENDS (searched just now)
+
+${research.rawSummary}
+
+### Trending Now
+${research.trends.map(t => `- ${t.title} (${t.platform}, ${t.estimatedViews}, ${t.duration}) — Hook: ${t.hookStyle} — Technique: ${t.keyTechnique}`).join('\n')}
+
+### Trending Audio
+${research.trendingAudio.join('\n')}
+
+### Trending Hashtags
+${research.trendingHashtags.join(' ')}
+
+### Current Structural Patterns
+${research.structuralPatterns}
+` : '';
+
+  const prompt = `You are a viral short-form video director. Your job is to CREATE CONTENT THAT GOES VIRAL by copying the structure and techniques of what's working RIGHT NOW.
 
 ## TASK
-Create a complete cut-by-cut video script for this brief:
+Create a complete cut-by-cut video script.
 
 **Model**: ${modelProfile}
 **Format**: ${request.format.label} (${request.format.description})
@@ -82,7 +126,11 @@ Create a complete cut-by-cut video script for this brief:
 **Cut range**: ${request.format.cutRange.min}-${request.format.cutRange.max} cuts
 **Creative brief**: ${request.intent}
 
+${researchSection}
+
 ${VIRAL_KNOWLEDGE}
+
+## CRITICAL: Use the current trends above to inform your script. Copy what's working — the hooks, the pacing, the audio sync points, the text placement. Adapt it to this specific model and brief.
 
 ## AVAILABLE MOTIONS
 ${motionList}

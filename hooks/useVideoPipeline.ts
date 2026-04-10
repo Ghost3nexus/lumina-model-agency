@@ -129,9 +129,10 @@ export function useVideoPipeline() {
   }, []);
 
   const [isGeneratingScript, setIsGeneratingScript] = useState(false);
+  const [scriptStatus, setScriptStatus] = useState<string | null>(null);
   const [scriptMeta, setScriptMeta] = useState<{ title: string; bgm: string; hashtags: string } | null>(null);
 
-  /** AI台本生成: intent → 全カットのプロンプトを自動生成 */
+  /** AI台本生成: バイラル調査 → 台本生成 → タイムライン注入 */
   const generateAIScript = useCallback(async (intent: string, apiKey: string) => {
     if (!timeline) return;
     const format = VIDEO_FORMATS.find(f => f.id === timeline.formatId);
@@ -139,10 +140,14 @@ export function useVideoPipeline() {
     if (!format || !model) return;
 
     setIsGeneratingScript(true);
+    setScriptStatus(null);
     setError(null);
 
     try {
-      const script = await generateScript({ model, format, intent, apiKey });
+      const script = await generateScript(
+        { model, format, intent, apiKey },
+        (progress) => setScriptStatus(progress.message),
+      );
       const cuts = scriptToTimelineCuts(script);
 
       setTimeline(prev => prev ? { ...prev, cuts } : prev);
@@ -151,8 +156,10 @@ export function useVideoPipeline() {
         bgm: script.bgmSuggestion,
         hashtags: script.hashtagSuggestion,
       });
+      setScriptStatus(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Script generation failed');
+      setScriptStatus(null);
     } finally {
       setIsGeneratingScript(false);
     }
@@ -178,6 +185,7 @@ export function useVideoPipeline() {
     setColorPreset,
     generateAIScript,
     isGeneratingScript,
+    scriptStatus,
     scriptMeta,
     generate,
     reset,
