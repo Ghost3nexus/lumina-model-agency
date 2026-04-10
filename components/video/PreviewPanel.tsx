@@ -2,6 +2,8 @@
  * PreviewPanel.tsx — Timeline preview: shows generated stills and videos
  */
 
+import { useState } from 'react';
+import { downloadTimelineZip } from '../../services/video/downloadPack';
 import type { TimelineCut } from '../../types/video';
 
 interface Props {
@@ -9,10 +11,25 @@ interface Props {
   isRunning: boolean;
   completedCuts: number;
   totalCuts: number;
+  modelId?: string;
+  formatId?: string;
 }
 
-export function PreviewPanel({ cuts, isRunning, completedCuts, totalCuts }: Props) {
+export function PreviewPanel({ cuts, isRunning, completedCuts, totalCuts, modelId, formatId }: Props) {
+  const [downloading, setDownloading] = useState(false);
   const doneCuts = cuts.filter(c => c.stillImage || c.videoUrl);
+
+  async function handleDownloadAll() {
+    if (!modelId || !formatId) return;
+    setDownloading(true);
+    try {
+      await downloadTimelineZip(cuts, modelId, formatId);
+    } catch (err) {
+      console.error('Download failed:', err);
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   if (isRunning && doneCuts.length === 0) {
     return (
@@ -54,6 +71,20 @@ export function PreviewPanel({ cuts, isRunning, completedCuts, totalCuts }: Prop
               style={{ width: `${(completedCuts / totalCuts) * 100}%` }}
             />
           </div>
+        </div>
+      )}
+
+      {/* Download all button */}
+      {doneCuts.length > 0 && !isRunning && (
+        <div className="px-4 pt-3">
+          <button
+            type="button"
+            onClick={handleDownloadAll}
+            disabled={downloading}
+            className="w-full py-2 rounded-lg text-xs font-semibold tracking-wider bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/25 transition-colors disabled:opacity-50"
+          >
+            {downloading ? 'Packing ZIP…' : `Download All (${doneCuts.length} cuts)`}
+          </button>
         </div>
       )}
 

@@ -216,6 +216,8 @@ export default function VideoStudioPage() {
             isRunning={isRunning}
             completedCuts={completedCuts}
             totalCuts={totalCuts}
+            modelId={timeline?.modelId}
+            formatId={timeline?.formatId}
           />
         </div>
       </main>
