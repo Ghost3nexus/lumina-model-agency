@@ -11,6 +11,8 @@ import LegalPage from './pages/LegalPage';
 import VideoStudioPage from './pages/VideoStudioPage';
 import TestSeedancePage from './pages/TestSeedancePage';
 import ForBrandsPage from './pages/ForBrandsPage';
+import EthicsPage from './pages/EthicsPage';
+import IpLicensePage from './pages/IpLicensePage';
 
 // ─── Error Boundary ──────────────────────────────────────────────────────────
 
@@ -85,6 +87,8 @@ export default function App() {
           <Routes>
             <Route path="/" element={<AgencyPage />} />
             <Route path="/for-brands" element={<ForBrandsPage />} />
+            <Route path="/ethics" element={<EthicsPage />} />
+            <Route path="/legal/ip-license" element={<IpLicensePage />} />
             <Route path="/studio" element={<ProtectedRoute><GenerationPage /></ProtectedRoute>} />
             <Route path="/video" element={<ProtectedRoute><VideoStudioPage /></ProtectedRoute>} />
             <Route path="/test/seedance" element={<ProtectedRoute><TestSeedancePage /></ProtectedRoute>} />

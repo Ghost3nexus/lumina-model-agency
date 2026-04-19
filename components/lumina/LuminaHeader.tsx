@@ -47,7 +47,7 @@ export default function LuminaHeader({ onBookClick }: LuminaHeaderProps) {
           <a href="/studio" className="hover:text-[#00D4FF] transition-colors">
             {t.nav.services}
           </a>
-          <a href="/legal" className="hover:text-[#00D4FF] transition-colors">
+          <a href="/ethics" className="hover:text-[#00D4FF] transition-colors">
             {t.nav.ethics}
           </a>
         </nav>

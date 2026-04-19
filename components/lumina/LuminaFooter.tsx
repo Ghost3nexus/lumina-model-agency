@@ -43,8 +43,8 @@ export default function LuminaFooter() {
             heading={t.footer.colAbout}
             links={[
               { label: lang === 'ja' ? 'ストーリー' : 'Story', href: '/legal' },
-              { label: lang === 'ja' ? '倫理規範' : 'Ethics', href: '/legal' },
-              { label: lang === 'ja' ? 'お問い合わせ' : 'Contact', href: 'mailto:brand@lumina-models.com' },
+              { label: lang === 'ja' ? '倫理規範' : 'Ethics', href: '/ethics' },
+              { label: lang === 'ja' ? 'お問い合わせ' : 'Contact', href: 'mailto:kozuki@tomorrowproof-ai.com' },
             ]}
           />
           <FooterColumn
@@ -52,7 +52,7 @@ export default function LuminaFooter() {
             links={[
               { label: lang === 'ja' ? '利用規約' : 'Terms', href: '/terms' },
               { label: lang === 'ja' ? 'プライバシー' : 'Privacy', href: '/privacy' },
-              { label: lang === 'ja' ? 'IPライセンス' : 'IP License', href: '/legal' },
+              { label: lang === 'ja' ? 'IPライセンス' : 'IP License', href: '/legal/ip-license' },
               { label: lang === 'ja' ? '詐欺警告' : 'Anti-fraud', href: '/legal' },
             ]}
           />
