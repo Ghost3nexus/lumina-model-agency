@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /studio
+Disallow: /video
+Disallow: /test/
+Disallow: /login
+
+Sitemap: https://lumina-model-agency.vercel.app/sitemap.xml
