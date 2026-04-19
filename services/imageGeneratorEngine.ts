@@ -17,7 +17,7 @@ import * as nanoBanana from './imageGeneratorNanoBanana';
 type Engine = 'gemini' | 'nano-banana';
 
 function currentEngine(): Engine {
-  const v = (import.meta.env?.VITE_IMAGE_ENGINE ?? 'gemini') as string;
+  const v = String(import.meta.env?.VITE_IMAGE_ENGINE ?? 'gemini').trim();
   return v === 'nano-banana' ? 'nano-banana' : 'gemini';
 }
 
