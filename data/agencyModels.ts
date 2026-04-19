@@ -110,7 +110,9 @@ const PORTFOLIO_FILES = [
   'surf-01.png', 'yoga-01.png', 'kamakura-01.png', 'workshop-01.png', // KAI
 ];
 
-/** Build images + portfolio for a v2 model, with fallback for missing files */
+/** Build images + portfolio for a v2 model, with fallback for missing files.
+ *  Also sets `proportionRef` to the 8-head batch-edited beauty.png so Studio
+ *  generations hard-lock the runway silhouette. */
 function m(id: string, overrides?: Partial<{ main: string; polaroid: string; beauty: string; editorial: string }>) {
   const b = `/agency-models/${id}`;
   return {
@@ -121,6 +123,7 @@ function m(id: string, overrides?: Partial<{ main: string; polaroid: string; bea
       editorial: overrides?.editorial ?? `${b}/editorial.png`,
     },
     portfolio: PORTFOLIO_FILES.map(f => `${b}/${f}`),
+    proportionRef: `${b}/beauty.png`,
   };
 }
 
