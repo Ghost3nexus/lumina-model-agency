@@ -98,11 +98,15 @@ export async function buildSlotImageParts(
   return parts;
 }
 
-/** Load model reference images for face consistency */
+/** Load model reference images for face consistency.
+ *  Uses `studioRefs` when defined (face-only refs to prevent outfit bleed),
+ *  otherwise falls back to all four `images.*` entries. */
 export async function buildModelRefParts(
   model: AgencyModel,
 ): Promise<Array<{ inlineData: { mimeType: string; data: string } }>> {
-  const refUrls = Object.values(model.images);
+  const refUrls = model.studioRefs && model.studioRefs.length > 0
+    ? model.studioRefs
+    : Object.values(model.images);
   const parts: Array<{ inlineData: { mimeType: string; data: string } }> = [];
 
   for (const url of refUrls) {
@@ -226,6 +230,7 @@ export async function generateFront(
   _styling?: StylingDirective | null,
   _hairMakeup?: HairMakeupDirective | null,
   fitting?: FittingResult | null,
+  pose?: string | null,
 ): Promise<string> {
   const [garmentParts, modelRefParts] = await Promise.all([
     buildSlotImageParts(slots),
@@ -242,22 +247,39 @@ export async function generateFront(
 
   const backProhibitions = buildBackOnlyProhibitions(analyses);
 
-  const prompt = `EC fashion photo. 3:4 portrait. Full body head-to-toe on clean studio background.
+  const poseDirective = pose && pose.trim().length > 0
+    ? `POSE (user-specified, must follow): ${pose.trim()}`
+    : 'POSE: luxury editorial contrapposto — weight on one leg, opposite hip subtly raised, other leg relaxed or crossed at ankle. Shoulders rolled slightly back and down. Hands: one relaxed at side, other tucked lightly into pocket or at waist. Never symmetrical military stance. Aloof gallery stillness, no smile.';
+
+  const prompt = `LUXURY MENSWEAR EC/LOOKBOOK photo. 3:4 portrait. Full body head-to-just-below-ankles on clean background.
+
+Aesthetic reference: Prada / Saint Laurent / Bottega Veneta / Dior Homme / Celine Homme / Lemaire / Jil Sander / Auralee.
 
 RULES (OBEY ALL):
 1. Top is UNTUCKED — hem falls over waistband. NEVER tuck in.
 2. Only show details visible in the FRONT reference photo. No back tags, no care labels, no invented decoration.
 3. Match the model reference photos exactly (face, body, skin, hair).
 4. Match garment reference photos exactly (color, material, pattern, silhouette). Add nothing.
-5. Directional light from 45deg, shadow ratio 1:2.5–1:3. No flat light, no blown highlights.
-${backProhibitions ? `6. ${backProhibitions}` : ''}
+5. LIGHTING — single large soft source at camera-left 30-45° slightly above. Key-to-fill ratio 1:2.5–1:3 (directional shadow under jaw/opposite cheek/garment hems clearly visible). Overcast-window daylight mood, NOT strobe. No flat light. No blown highlights.
+6. BODY PROPORTION — LUXURY RUNWAY MODEL standard (Prada/Saint Laurent/Dior Homme casting level). **Target 9 heads tall (9頭身), minimum 8.5. Watanabe standard: "8頭身未満はモデルじゃない"**. Head VERY SMALL relative to body (1/9 of total height). Legs 55% of total body height (crotch-to-floor = 55% of head-to-floor). Shoulders broader than hips, narrow waist, long neck column, long slim limbs. PANTS MID-RISE at natural waist — NEVER low-rise/hip-sit/sagging (makes legs short). Never 7-head or 8-head average proportions. Never chibi/stubby.
+7. NECK ARCHITECTURE — LUXURY MODEL STANDARD (anti-fighter-neck rule). **Neck width = 0.62-0.70 of face width** (NOT equal to face width, NOT wider than jaw). Long swan-like neck column visible for at least 1/2 head-height. Clear open gap between jawline and clavicle — collarbones visible. **Flat sloping trapezius, shoulders drop DOWN and AWAY from the neck** (never shrugged, never rising toward ears). Subtle sternocleidomastoid shadow only — NEVER bulging muscle cords. Target 36-38cm circumference on a 185cm frame (or slimmer 34-35cm if model has a large neck tattoo to compensate for visual bulk). Reads as "editorial / Prada / Saint Laurent / Lemaire" neck, NOT "MMA fighter / rugby player / bodybuilder" neck.
+7b. NECK TATTOO (if model has one) — contained on ONE LATERAL SIDE only. NEVER wrap to front/throat/Adam's apple. NEVER cross centerline. NEVER extend to opposite side. Clean skin on 60-70% of neck, tattoo on 30-40% of one side. Ink must render as FLAT GRAPHIC (no volumetric depth, no wrap around implied volume) — tattoo should not make neck read thicker. Slim neck silhouette visible through ink.
+8. LENS & CAMERA — **85mm to 105mm focal length on full-frame/medium-format** (mild telephoto compression). NEVER wide-angle (<50mm). NEVER even standard 50mm — push to 85mm+. Camera at subject sternum-to-hip height (slightly below eye-line to elongate legs). f/4–f/5.6, subject sharp, background softly rendered. Plumb vertical, no Dutch tilt.
+9. FRAMING — head-to-just-below-ankles with 5-10% breathing room top and bottom. Subject centered or on rule-of-thirds vertical. Whole figure visible head-to-floor.
+10. BACKGROUND — warm off-white seamless (#F2EFEA) OR cool concrete grey (#8A8A8A) OR raw limewash/plaster textured wall. Natural imperfection preferred. NEVER pure white, NEVER gradient, NEVER colored pop.
+11. POST-PROCESSING — slightly desaturated warm neutral grade, pull magenta from midtones, faint green-teal lift in shadows. **Blacks LIFTED to #0E0E0E (not crushed pure black)**. **Highlights ROLLED OFF — no pure white clipping**. Matte skin, pores visible, minimal retouching, NO plastic smoothing. Stubble intact. Subtle ~ISO 400 film grain. Color palette: taupe/bone/charcoal/putty/olive — never saturated.
+${backProhibitions ? `12. ${backProhibitions}` : ''}
 
 MODEL: ${modelDesc}
 
 OUTFIT: ${outfitDesc}
 
+${poseDirective}
+
 ${stylingPrompt}
-${fittingPrompt}`;
+${fittingPrompt}
+
+HARD NEGATIVES: NO 7/8-heads proportions, NO big head, NO short legs, NO wide-angle, NO low-rise/hip-sit pants, NO chibi/stubby, NO flat lighting, NO blown highlights, NO crushed blacks, NO plastic skin, NO teal-and-orange grade, NO HDR/vibrance, NO saturated colors, NO smile/warm catalog, NO symmetrical military stance, NO dynamic sports pose, NO tattoo wrap-around neck, NO text/logos/watermarks, NO thick/muscular/bull neck, NO fighter/MMA/wrestler/bodybuilder neck, NO wide neck base, NO bulging sternocleidomastoid cords, NO hypertrophic trapezius, NO shrugged shoulders rising to ears, NO neck as wide as face, NO jawline touching clavicle (closed throat), NO rugby player physique.`;
 
   const client = createClient(apiKey);
 
@@ -267,11 +289,11 @@ ${fittingPrompt}`;
   ];
 
   if (modelRefParts.length > 0) {
-    allParts.push({ text: `MODEL REFERENCE PHOTOS (${modelRefParts.length} images — this is the person):` });
+    allParts.push({ text: `MODEL REFERENCE PHOTOS (${modelRefParts.length} images — use these ONLY for FACE, HAIR, SKIN, and BODY PROPORTION. **IGNORE whatever outfit or clothing the person is wearing in these model reference photos** — the model's actual outfit comes from the separate GARMENT REFERENCE PHOTOS below. CRITICAL — observe the references for identity only: the model has a SMALL HEAD relative to body (9 heads tall runway standard), a SLIM NECK (not thick fighter neck), LONG LEGS (55% of body height). Reproduce this luxury-runway proportion in the generated image — do NOT default to average-human 7-head proportions. DO NOT copy any garments, shirts, pants, or accessories visible in these model reference photos.` });
     allParts.push(...modelRefParts);
   }
 
-  allParts.push({ text: `GARMENT REFERENCE PHOTOS (${slotCount} items — these are the products):` });
+  allParts.push({ text: `GARMENT REFERENCE PHOTOS (${slotCount} items — these are THE ACTUAL OUTFIT to render on the model. Use THESE exact garments, not anything the model is wearing in the model reference photos above):` });
   allParts.push(...garmentParts);
 
   const response = await callWithRetry(
@@ -335,13 +357,25 @@ export async function generateAngle(
     return `${a.category}: branding=${b}`;
   }).join('; ');
 
-  const prompt = `${angle.toUpperCase()} view of the same model and outfit. 3:4 portrait.
+  const prompt = `${angle.toUpperCase()} view of the same model and outfit. LUXURY MENSWEAR EC/LOOKBOOK photo. 3:4 portrait.
+
+Aesthetic: Prada / Saint Laurent / Bottega Veneta / Dior Homme / Lemaire / Auralee.
 
 RULES (OBEY ALL):
 1. Top is UNTUCKED — identical to the front image. NEVER tuck in.
-2. Same studio, same lighting, same outfit as front. Match the front image exactly.
+2. Same studio, same lighting, same outfit as front. Match the front image exactly for identity and wardrobe.
 3. No invented details. If plain in front, plain in ${angle}. Branding: ${brandingInfo}
 4. ${angleInstruction}
+5. BODY PROPORTION — maintain LUXURY RUNWAY standard (9 heads tall target, 8.5 minimum). Small head, long legs (55% of body height), long slim swan-like neck. Never 7/8-heads average.
+6. NECK — neck width 0.62-0.70 of face width, long visible column, flat sloping trapezius, shoulders drop away (never shrugged). NO fighter/MMA/bull-neck. If model has a neck tattoo, keep it contained to ONE LATERAL SIDE only — NEVER wrap to front/throat/Adam's apple. Tattoo as flat graphic ink, does not add visual bulk.
+7. LENS — 85-105mm focal length (telephoto compression), camera at sternum-hip height, f/4-5.6. NEVER wide-angle.
+8. POSE — **CONTRAPPOSTO stance**: weight on ONE leg, opposite hip subtly raised, other leg relaxed or crossed at ankle. NEVER symmetrical military both-feet-parallel. Shoulders rolled slightly back and DOWN. Controlled gallery calm — NO smile, NO tension, NO dynamic sports pose.
+9. HAIR — cleanly combed/slicked back with refined silhouette, NO flyaway messy wavy tips escaping.
+10. EXPRESSION — controlled calm, middle-distance or calm direct gaze, NOT intense, NOT tense, NOT aggressive stare.
+11. FABRIC DRAPE — natural cloth weight, soft gravity visible, relaxed drape (never stiff cardboard).
+12. POST — warm neutral grade, blacks lifted to #0E0E0E (no pure black), highlights rolled off (no pure white), matte skin with pores visible, no plastic smoothing.
+
+HARD NEGATIVES: NO 7/8-heads, NO big head, NO short legs, NO thick fighter/MMA neck, NO bull neck, NO shrugged shoulders, NO wide-angle distortion, NO symmetrical military stance, NO flyaway messy hair, NO intense tense gaze, NO smile, NO stiff fabric, NO flat lighting, NO blown highlights, NO crushed blacks, NO plastic skin, NO tattoo wrap to front of neck, NO text/logos/watermarks.
 ${fitting ? `\nFit: ${fitting.visual_description}` : ''}`;
 
   const client = createClient(apiKey);

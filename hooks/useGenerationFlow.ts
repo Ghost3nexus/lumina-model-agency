@@ -27,7 +27,7 @@ import type { GarmentAnalysis, OutfitSlot, SlotUpload } from '../types/garment';
 import { isOutfitReady } from '../types/garment';
 import type { AgencyModel } from '../data/agencyModels';
 import { analyzeOutfit } from '../services/garmentAnalyzer';
-import { generateFront, generateAngle } from '../services/imageGenerator';
+import { generateFront, generateAngle } from '../services/imageGeneratorEngine';
 import { generateSNSCreative } from '../services/snsGenerator';
 import {
   verifyAnalysis,
@@ -282,7 +282,7 @@ export function useGenerationFlow() {
   // ── Generate ───────────────────────────────────────────────────────────────
 
   const generate = useCallback(
-    async (apiKey: string, heroSlot?: OutfitSlot | null) => {
+    async (apiKey: string, heroSlot?: OutfitSlot | null, pose?: string | null) => {
       const outfitSlots = state.outfitSlots;
       const selectedModel = state.selectedModel;
 
@@ -432,7 +432,7 @@ export function useGenerationFlow() {
       });
 
       try {
-        const frontUrl = await generateFront(apiKey, outfitSlots, analyses, selectedModel, heroSlot, stylingDir, hairMakeupDir, fittingResult);
+        const frontUrl = await generateFront(apiKey, outfitSlots, analyses, selectedModel, heroSlot, stylingDir, hairMakeupDir, fittingResult, pose);
 
         // Phase 2b: Generation QA — compare generated garment against reference
         const refImages = (Object.values(outfitSlots).filter(Boolean) as SlotUpload[]).map(e => e.compressed);
