@@ -293,6 +293,21 @@ HARD NEGATIVES: NO 7/8-heads proportions, NO big head, NO short legs, NO wide-an
     allParts.push(...modelRefParts);
   }
 
+  // Optional: proportion target reference — a canonical runway-balance full-body shot
+  // of the same model. Instructs the generator to match this exact silhouette, leg
+  // length, and framing. Different from identity refs: ignore the outfit, copy only
+  // the proportion/composition.
+  if (model.proportionRef) {
+    try {
+      const base64 = await imageToBase64(model.proportionRef);
+      const { mimeType, data } = parseBase64(base64);
+      allParts.push({ text: `PROPORTION TARGET REFERENCE (1 image — this is the EXACT body silhouette, head-to-body ratio (8+ heads), leg length, and full-body framing the output must match. Use ONLY for proportion and composition: same head size relative to body, same leg length ratio, same figure-fills-90%-of-frame framing, same posture reference. IGNORE the outfit in this image — the actual clothes come from the GARMENT REFERENCE PHOTOS below. The generated image must replicate the silhouette and proportion of this reference exactly.):` });
+      allParts.push({ inlineData: { mimeType, data } });
+    } catch {
+      /* skip if unavailable */
+    }
+  }
+
   allParts.push({ text: `GARMENT REFERENCE PHOTOS (${slotCount} items — these are THE ACTUAL OUTFIT to render on the model. Use THESE exact garments, not anything the model is wearing in the model reference photos above):` });
   allParts.push(...garmentParts);
 
