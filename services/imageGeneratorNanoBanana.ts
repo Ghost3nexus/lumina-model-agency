@@ -32,7 +32,7 @@ import type { StylingDirective, HairMakeupDirective, FittingResult } from './qua
 /** Fraction to shrink the head region on the runway-proportion edit pass. */
 const HEAD_SHRINK_RATIO = 0.85;
 
-const HEAD_SHRINK_PROMPT = `Edit this photograph with two linked corrections:
+const HEAD_SHRINK_PROMPT = `Edit image #1 (the source photograph) with ONLY these two head-region corrections. **Do NOT regenerate, alter, or restyle anything from the neck down — shirt, pants, shoes, pose, waist area, outfit, tattoos below the neck, hands, background, lighting, grain — all must be pixel-level identical to the source.**
 
 1. HEAD: reduce the head (including hair) to ${Math.round(
   HEAD_SHRINK_RATIO * 100,
@@ -40,34 +40,54 @@ const HEAD_SHRINK_PROMPT = `Edit this photograph with two linked corrections:
 
 2. NECK — SHORT AND SLIGHTLY SLIM (anatomically normal, NOT elongated):
    - WIDTH: slightly narrower than the face (approximately 65-70 percent of face width).
-   - LENGTH: SHORT. The visible bare neck column between the chin and the shirt collar must be NO MORE THAN 1/3 OF THE FACE HEIGHT. The chin should sit close to the shoulders and shirt collar. DO NOT elongate the neck. DO NOT increase the distance between chin and clavicle. DO NOT stretch the neck column taller. The neck should read as a normal masculine anatomical neck — NOT a long swan column, NOT a giraffe, NOT a fashion stretch.
-   - Trapezius flat, shoulders drop smoothly. Keep the neck tattoo (if any) as flat ink on a slim silhouette.
+   - LENGTH: SHORT. The visible bare neck column between the chin and the shirt collar must be NO MORE THAN 1/3 OF THE FACE HEIGHT. The chin should sit close to the shoulders and shirt collar. DO NOT elongate the neck. DO NOT increase the distance between chin and clavicle. DO NOT stretch the neck column taller.
+   - Trapezius flat, shoulders drop smoothly.
 
-Keep everything else EXACTLY the same: face identity, hair style, skin tone and texture, eyes, facial hair, tattoos, piercings, body silhouette, outfit, pose, hands, background, lighting, shadows, film grain, photographic quality. 3:4 aspect ratio.
+NECK TATTOO PRESERVATION:
+If the source image shows a tattoo on the neck, **copy that exact tattoo design from image #1 pixel-for-pixel onto the resized neck — same silhouette, same colors, same ink style, same placement on the right side**. Image #2 (when supplied) is the identity reference: use it to double-check the tattoo design matches the character's canon. Do NOT invent a new tattoo. Do NOT change the bird species. Do NOT change ink colors. Do NOT redraw the design in a generic style.
 
-HARD NEGATIVES: NO neck wider than face, NO bull neck, NO thick muscular neck, NO trapezius bulge, NO shrugged shoulders, NO elongated neck, NO stretched neck, NO giraffe neck, NO long swan neck, NO extra space between chin and clavicle, NO neck column longer than 1/3 of face height, NO chin floating above the collar, NO plastic skin, NO identity drift.`;
+SHIRT/OUTFIT PRESERVATION:
+Keep the shirt exactly as it appears in image #1. If it is UNTUCKED in image #1 it MUST remain UNTUCKED (hem loose over waistband). If it is open-collar, stays open-collar. Do not tuck it in. Do not restyle the waist. The body from the clavicles down must be indistinguishable from the source image.
+
+Final constraints: 3:4 aspect ratio, same film grain, same Kodak Portra tone curve as the source.
+
+HARD NEGATIVES: NO outfit restyling, NO shirt tucked in (if source was untucked), NO waistline changes, NO new tattoo design, NO generic bird tattoo, NO loss of yellow/color accents in the neck tattoo, NO neck wider than face, NO bull neck, NO elongated neck, NO giraffe neck, NO plastic skin, NO identity drift.`;
 
 /**
  * Runs the Gemini head-shrink edit on a source image (data URL) and returns a new data URL.
+ * Optionally accepts an identity reference (face-ref) to help preserve neck tattoo design.
  */
-async function shrinkHead(apiKey: string, sourceDataUrl: string): Promise<string> {
-  const base64 = await imageToBase64(sourceDataUrl);
-  const { mimeType, data } = parseBase64(base64);
+async function shrinkHead(
+  apiKey: string,
+  sourceDataUrl: string,
+  identityRefUrl?: string,
+): Promise<string> {
+  const sourceBase64 = await imageToBase64(sourceDataUrl);
+  const { mimeType: srcMime, data: srcData } = parseBase64(sourceBase64);
+
+  const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
+    { text: HEAD_SHRINK_PROMPT },
+    { text: '[IMAGE #1 — SOURCE photograph to edit]:' },
+    { inlineData: { mimeType: srcMime, data: srcData } },
+  ];
+
+  if (identityRefUrl) {
+    try {
+      const idBase64 = await imageToBase64(identityRefUrl);
+      const { mimeType: idMime, data: idData } = parseBase64(idBase64);
+      parts.push({ text: '[IMAGE #2 — IDENTITY REFERENCE for tattoo design canon]:' });
+      parts.push({ inlineData: { mimeType: idMime, data: idData } });
+    } catch {
+      /* Identity ref optional; skip on load failure */
+    }
+  }
 
   const client = createClient(apiKey);
   const response = await callWithRetry(
     () =>
       client.models.generateContent({
         model: GEN_CONFIG.models.proImage,
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: HEAD_SHRINK_PROMPT },
-              { inlineData: { mimeType, data } },
-            ],
-          },
-        ],
+        contents: [{ role: 'user', parts }],
         config: {
           responseModalities: ['TEXT', 'IMAGE'],
           temperature: GEN_CONFIG.GENERATION_TEMPERATURE,
@@ -116,7 +136,8 @@ export async function generateFront(
     fitting,
     pose,
   );
-  return await shrinkHead(apiKey, base);
+  const identityRef = model.studioRefs?.[0] ?? model.images.main;
+  return await shrinkHead(apiKey, base, identityRef);
 }
 
 /**
