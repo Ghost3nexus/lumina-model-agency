@@ -29,10 +29,6 @@ import type { AgencyModel } from '../data/agencyModels';
 import type { AngleType } from '../types/generation';
 import type { StylingDirective, HairMakeupDirective, FittingResult } from './qualityAgent';
 
-/** Fraction to shrink the head region on the runway-proportion edit pass.
- *  0.80 = ~20% smaller head, which lifts a typical 7-head base to ~8 heads
- *  (runway standard) while staying anatomically natural. */
-const HEAD_SHRINK_RATIO = 0.80;
 
 const HEAD_SHRINK_PROMPT = `Edit image #1 (the source photograph) to achieve an **8.5-to-9-head runway model proportion**.
 
