@@ -29,6 +29,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/elevenlabs/, ''),
       },
+      '/api/runway': {
+        target: 'https://api.dev.runwayml.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/runway/, ''),
+      },
     },
   }
 })

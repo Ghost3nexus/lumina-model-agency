@@ -9,6 +9,8 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import LegalPage from './pages/LegalPage';
 import VideoStudioPage from './pages/VideoStudioPage';
+import TestSeedancePage from './pages/TestSeedancePage';
+import ForBrandsPage from './pages/ForBrandsPage';
 
 // ─── Error Boundary ──────────────────────────────────────────────────────────
 
@@ -82,8 +84,10 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<AgencyPage />} />
+            <Route path="/for-brands" element={<ForBrandsPage />} />
             <Route path="/studio" element={<ProtectedRoute><GenerationPage /></ProtectedRoute>} />
             <Route path="/video" element={<ProtectedRoute><VideoStudioPage /></ProtectedRoute>} />
+            <Route path="/test/seedance" element={<ProtectedRoute><TestSeedancePage /></ProtectedRoute>} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/terms" element={<TermsPage />} />
