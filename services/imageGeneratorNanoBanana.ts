@@ -29,29 +29,40 @@ import type { AgencyModel } from '../data/agencyModels';
 import type { AngleType } from '../types/generation';
 import type { StylingDirective, HairMakeupDirective, FittingResult } from './qualityAgent';
 
-/** Fraction to shrink the head region on the runway-proportion edit pass. */
-const HEAD_SHRINK_RATIO = 0.85;
+/** Fraction to shrink the head region on the runway-proportion edit pass.
+ *  0.80 = ~20% smaller head, which lifts a typical 7-head base to ~8 heads
+ *  (runway standard) while staying anatomically natural. */
+const HEAD_SHRINK_RATIO = 0.80;
 
-const HEAD_SHRINK_PROMPT = `Edit image #1 (the source photograph) with ONLY these two head-region corrections. **Do NOT regenerate, alter, or restyle anything from the neck down — shirt, pants, shoes, pose, waist area, outfit, tattoos below the neck, hands, background, lighting, grain — all must be pixel-level identical to the source.**
+const HEAD_SHRINK_PROMPT = `Edit image #1 (the source photograph). TWO mandatory corrections:
 
-1. HEAD: reduce the head (including hair) to ${Math.round(
+1. HEAD SHRINK (PRIMARY GOAL — MUST HAPPEN): reduce the model's head (including hair) to **${Math.round(
   HEAD_SHRINK_RATIO * 100,
-)} percent of its current size, keeping the head centered on the same neck position. The head should appear smaller and more compact relative to the body for a natural 8.5-to-9-head runway-model proportion.
+)} percent of its current size**. The new head MUST be visibly smaller than in the source — compare the source and render side-by-side mentally, the new head should be ${Math.round(
+  (1 - HEAD_SHRINK_RATIO) * 100,
+)} percent smaller. Keep the head centered above the neck. Target proportion: 8.5-to-9-head runway model silhouette. This shrink is non-negotiable — if the head in the output looks the same size as the source, the edit has failed.
 
-2. NECK — SHORT AND SLIGHTLY SLIM (anatomically normal, NOT elongated):
-   - WIDTH: slightly narrower than the face (approximately 65-70 percent of face width).
-   - LENGTH: SHORT. The visible bare neck column between the chin and the shirt collar must be NO MORE THAN 1/3 OF THE FACE HEIGHT. The chin should sit close to the shoulders and shirt collar. DO NOT elongate the neck. DO NOT increase the distance between chin and clavicle. DO NOT stretch the neck column taller.
+2. NECK — short and slightly slim (anatomically normal, NOT elongated):
+   - WIDTH: slightly narrower than the face (~65-70 percent of face width).
+   - LENGTH: keep SHORT. Bare neck column between chin and shirt collar ≤ 1/3 of face height. Chin sits close to shoulders. NO elongated / stretched / giraffe neck.
    - Trapezius flat, shoulders drop smoothly.
 
-NECK TATTOO PRESERVATION:
-If the source image shows a tattoo on the neck, **copy that exact tattoo design from image #1 pixel-for-pixel onto the resized neck — same silhouette, same colors, same ink style, same placement on the right side**. Image #2 (when supplied) is the identity reference: use it to double-check the tattoo design matches the character's canon. Do NOT invent a new tattoo. Do NOT change the bird species. Do NOT change ink colors. Do NOT redraw the design in a generic style.
+PRESERVE FROM SOURCE (do NOT alter):
+- Body from clavicles down: shirt, pants, shoes, pose, waist area, tuck/untuck state, hands, fingers, tattoos below neck
+- Background, lighting, shadows, film grain, color grade
+- Face identity (same person), facial hair, eye color, freckles, piercings
+- Neck tattoo design: copy pixel-for-pixel from source — same silhouette, colors, ink style, placement
 
-SHIRT/OUTFIT PRESERVATION:
-Keep the shirt exactly as it appears in image #1. If it is UNTUCKED in image #1 it MUST remain UNTUCKED (hem loose over waistband). If it is open-collar, stays open-collar. Do not tuck it in. Do not restyle the waist. The body from the clavicles down must be indistinguishable from the source image.
+IMAGE #2 (when supplied) = identity reference. Use it to confirm the neck tattoo design matches the character's canon.
 
-Final constraints: 3:4 aspect ratio, same film grain, same Kodak Portra tone curve as the source.
+HARD NEGATIVES:
+NO head the same size as source (must be smaller)
+NO outfit restyling, NO shirt tucked in if source was untucked, NO waist changes
+NO new tattoo design, NO generic bird tattoo, NO loss of colored accents
+NO neck wider than face, NO bull neck, NO elongated / stretched / giraffe neck
+NO plastic skin, NO identity drift, NO background changes.
 
-HARD NEGATIVES: NO outfit restyling, NO shirt tucked in (if source was untucked), NO waistline changes, NO new tattoo design, NO generic bird tattoo, NO loss of yellow/color accents in the neck tattoo, NO neck wider than face, NO bull neck, NO elongated neck, NO giraffe neck, NO plastic skin, NO identity drift.`;
+3:4 aspect ratio, preserve source film grain and tone.`;
 
 /**
  * Runs the Gemini head-shrink edit on a source image (data URL) and returns a new data URL.
