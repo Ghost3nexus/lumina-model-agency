@@ -1,0 +1,76 @@
+{
+  "description": "LUMINA_Lookbook_SS26 Vol.01 — PDF page extracts for /for-brands CaseStudies featured lookbook section",
+  "sourcePdf": "~/Desktop/LUMINA_Lookbook_SS26のコピー.pdf",
+  "assets": [
+    {
+      "file": "page-01.jpg",
+      "purpose": "Cover — NAVY airfield with male model holding leather duffel",
+      "tool": "pdftoppm (150dpi, jpeg quality 85)",
+      "created": "2026-04-20",
+      "used_in": "components/lumina/CaseStudies.tsx (cover hero)"
+    },
+    {
+      "file": "page-02.jpg",
+      "purpose": "Portrait pair — Cowichan sweater male + rust knit female",
+      "tool": "pdftoppm",
+      "created": "2026-04-20",
+      "used_in": "components/lumina/CaseStudies.tsx (lookbook strip)"
+    },
+    {
+      "file": "page-03.jpg",
+      "purpose": "RRL convertible couple on coastal highway, golden hour",
+      "tool": "pdftoppm",
+      "created": "2026-04-20",
+      "used_in": "components/lumina/CaseStudies.tsx (lookbook strip — signature shot)"
+    },
+    {
+      "file": "page-04.jpg",
+      "purpose": "Jeep interior male + cabin plaid/camo female",
+      "tool": "pdftoppm",
+      "created": "2026-04-20",
+      "used_in": "components/lumina/CaseStudies.tsx (lookbook strip)"
+    },
+    {
+      "file": "page-05.jpg",
+      "purpose": "Camo dress with leather jacket at vintage aircraft hangar",
+      "tool": "pdftoppm",
+      "created": "2026-04-20",
+      "used_in": "components/lumina/CaseStudies.tsx (lookbook strip)"
+    },
+    {
+      "file": "page-06.jpg",
+      "purpose": "Surf shack male + motorcycle wheat field female sunset",
+      "tool": "pdftoppm",
+      "created": "2026-04-20",
+      "used_in": "components/lumina/CaseStudies.tsx (lookbook strip)"
+    },
+    {
+      "file": "page-07.jpg",
+      "purpose": "Red 1967 Mustang with camo shirt male",
+      "tool": "pdftoppm",
+      "created": "2026-04-20",
+      "used_in": "components/lumina/CaseStudies.tsx (lookbook strip)"
+    },
+    {
+      "file": "page-08.jpg",
+      "purpose": "B&W aircraft fuselage woman + runway denim couple",
+      "tool": "pdftoppm",
+      "created": "2026-04-20",
+      "used_in": "components/lumina/CaseStudies.tsx (lookbook strip)"
+    },
+    {
+      "file": "page-09.jpg",
+      "purpose": "Denim jumpsuit female inside military aircraft cabin",
+      "tool": "pdftoppm",
+      "created": "2026-04-20",
+      "used_in": "components/lumina/CaseStudies.tsx (lookbook strip)"
+    },
+    {
+      "file": "page-10.jpg",
+      "purpose": "Back cover (LUMINA MODEL AGENCY branding, mostly whitespace)",
+      "tool": "pdftoppm",
+      "created": "2026-04-20",
+      "used_in": "unused in web (reserved for PDF viewer fallback)"
+    }
+  ]
+}

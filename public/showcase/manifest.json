@@ -1,0 +1,10 @@
+{
+  "description": "EC product showcase assets for /for-brands — mirrored from lumina-studio-lp.vercel.app",
+  "source": "https://lumina-studio-lp.vercel.app/assets/images/showcase/",
+  "downloadedAt": "2026-04-20",
+  "products": [
+    "bottega", "miumiu", "noah", "nb", "zara", "nike"
+  ],
+  "shotsPerProduct": ["front", "side", "back", "detail", "product (flat-lay)"],
+  "used_in": "components/lumina/ProductShowcase.tsx"
+}

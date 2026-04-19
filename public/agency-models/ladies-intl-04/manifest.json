@@ -1,0 +1,69 @@
+{
+  "description": "NADIA (ladies-intl-04) — Quiet luxury workwear model. Bella Hadid × Lindsay Lohan vibe. Client proposal.",
+  "assets": [
+    {
+      "file": "polaroid-front.png",
+      "size": "536KB",
+      "purpose": "Agency casting card — front full body",
+      "tool": "Gemini 3 Pro Image Preview",
+      "created": "2026-04-10",
+      "used_in": "agencyModels.ts polaroid reference"
+    },
+    {
+      "file": "polaroid-face.png",
+      "size": "583KB",
+      "purpose": "Agency comp card — face close-up for identity lock",
+      "tool": "Gemini 3 Pro Image Preview",
+      "created": "2026-04-10",
+      "used_in": "Identity lock reference for portfolio generation"
+    },
+    {
+      "file": "beauty.png",
+      "size": "701KB",
+      "purpose": "Beauty portrait — natural glamour, freckles visible",
+      "tool": "Gemini 3 Pro Image Preview",
+      "created": "2026-04-10",
+      "used_in": "agencyModels.ts main/beauty image"
+    },
+    {
+      "file": "editorial.png",
+      "size": "532KB",
+      "purpose": "Editorial — Max Mara camel coat, studio",
+      "tool": "Gemini 3 Pro Image Preview",
+      "created": "2026-04-10",
+      "used_in": "agencyModels.ts editorial image"
+    },
+    {
+      "file": "v3-campaign.png",
+      "size": "664KB",
+      "purpose": "Portfolio — Max Mara camel coat, urban city backdrop",
+      "tool": "Gemini 3 Pro Image Preview (identity-locked)",
+      "created": "2026-04-10",
+      "used_in": "Portfolio gallery"
+    },
+    {
+      "file": "v3-verve-cover.png",
+      "size": "512KB",
+      "purpose": "Portfolio — Theory office look, pinstripe blazer",
+      "tool": "Gemini 3 Pro Image Preview (identity-locked)",
+      "created": "2026-04-10",
+      "used_in": "Portfolio gallery"
+    },
+    {
+      "file": "v3-form-editorial.png",
+      "size": "645KB",
+      "purpose": "Portfolio — Beauty hybrid, golden-hour, freckles",
+      "tool": "Gemini 3 Pro Image Preview (identity-locked)",
+      "created": "2026-04-10",
+      "used_in": "Portfolio gallery"
+    },
+    {
+      "file": "v3-muse-portrait.png",
+      "size": "592KB",
+      "purpose": "Portfolio — The Row weekend, cashmere + denim",
+      "tool": "Gemini 3 Pro Image Preview (identity-locked)",
+      "created": "2026-04-10",
+      "used_in": "Portfolio gallery"
+    }
+  ]
+}
