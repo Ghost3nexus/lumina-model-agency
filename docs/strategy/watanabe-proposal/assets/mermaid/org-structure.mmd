@@ -1,0 +1,21 @@
+%% 図: Wizard AI 組織構造(Option A — 新事業部)
+%% Wizard Models の資本・経営には関与せず、TomorrowProof は技術・運営提供者
+flowchart TD
+    W["株式会社ウィザード<br/>(既存・渡辺様)"]
+    W --> WM["Wizard Models<br/>(既存・人間モデル事業)<br/>※ 不干渉"]
+    W --> WAI["Wizard AI (新事業部)"]
+
+    WAI --> BF["Brand Face<br/>渡辺真史<br/>(顔・クリエイティブ責任)"]
+    WAI --> TO["Tech & Operations<br/>KOZUKI / TomorrowProof<br/>(技術・運営・営業)"]
+
+    TO --> ST["AI Studio<br/>(Gemini / Kling / ElevenLabs)"]
+    TO --> CB["Character Bible<br/>(14 AIモデルのIP仕様)"]
+    TO --> OP["Platform / Marketing<br/>(Vercel / Supabase / 広告)"]
+
+    classDef existing fill:#1a1a2e,color:#fafafa,stroke:#6b7280
+    classDef newEntity fill:#00d4ff,color:#050508,stroke:#00d4ff
+    classDef kozuki fill:#0a0a0f,color:#00d4ff,stroke:#00d4ff
+
+    class W,WM existing
+    class WAI,BF newEntity
+    class TO,ST,CB,OP kozuki
