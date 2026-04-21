@@ -1,87 +1,68 @@
-# Wizard AI(仮称): AI × 伝統モデルエージェンシーの構想
+<div class="cover">
+  <img class="cover-bg" src="../../../public/case-studies/lumina-lookbook-ss26/page-01.jpg" alt="" />
+  <div class="cover-frame">
+    <div class="cover-eyebrow">A DRAFT IDEA · 2026</div>
+    <div class="cover-title">
+      <span class="line-1">AI ×</span>
+      <span class="line-2">Traditional</span>
+      <span class="line-3">Model Agency</span>
+    </div>
+    <div class="cover-subtitle">伝統モデルエージェンシーと AI を、ひとつの形にする素案</div>
+    <div class="cover-meta">
+      <div class="to">渡辺 真史 様</div>
+      <div class="from">KOZUKI TAKAHIRO · TomorrowProof Inc.</div>
+      <div class="date">April 2026</div>
+    </div>
+  </div>
+</div>
 
-**渡辺真史 様へ**
-**株式会社TomorrowProof 代表 KOZUKI TAKAHIRO**
-**2026年4月21日**
+<div class="chapter-break"></div>
 
----
+<div class="foreword">
+  <div class="foreword-eyebrow">本ドキュメントの位置づけ</div>
+  <h2 class="foreword-title">提案書ではなく、素案です。</h2>
+  <p>
+    本書は、渡辺様と一緒に形にできるかもしれない「事業の素案」をまとめたものです。
+    組織形態・名称・数字はすべて<strong>たたき台</strong>であり、対話を通じて再設計する前提でお読みください。
+  </p>
+  <ul class="foreword-list">
+    <li>渡辺様のお時間を最優先に設計(初回 30 分、以降 月 60 分以内)</li>
+    <li>報酬・契約条件の交渉を目的とした書面ではありません</li>
+    <li>最終的な形は、渡辺様のご判断と意向で再構成する余地を残しています</li>
+  </ul>
+  <div class="foreword-cta">
+    <div class="cta-label">GOOGLE MEET</div>
+    <div class="cta-line">30 分、お話を聞かせていただけないでしょうか。</div>
+    <div class="cta-url">calendar.app.google/4EPiRfG5wYjJfn4J6</div>
+  </div>
+</div>
 
-![LUMINA Lookbook SS26 — Cover](../../../public/case-studies/lumina-lookbook-ss26/page-01.jpg)
+<div class="chapter-break"></div>
 
-> *画像: LUMINA Lookbook SS26 カバー(Navy airfield)。LUMINA が Character Bible に基づき生成した、既存 Lookbook 事例より。*
+<div class="toc-block">
+  <div class="toc-eyebrow">目次 · CONTENTS</div>
+  <ol class="toc-list">
+    <li><span class="num">I</span><span class="label">Executive Summary</span><span class="sub">AI × 伝統モデルエージェンシーという空白</span></li>
+    <li><span class="num">II</span><span class="label">Market 3C</span><span class="sub">市場・競合・当社の分析</span></li>
+    <li><span class="num">III</span><span class="label">Opportunity</span><span class="sub">なぜ今、なぜ日本発で海外を狙えるか</span></li>
+    <li><span class="num">IV</span><span class="label">Structure</span><span class="sub">組織構造と役割の素案</span></li>
+    <li><span class="num">V</span><span class="label">Service Roadmap</span><span class="sub">サービス拡大の素案</span></li>
+    <li><span class="num">VI</span><span class="label">Phased Roadmap</span><span class="sub">フェーズ別計画(素案)</span></li>
+    <li><span class="num">VII</span><span class="label">Immediate Actions</span><span class="sub">初回対話で議論したいこと</span></li>
+  </ol>
+  <div class="toc-appendix">
+    <span>補足 A — LUMINA Lookbook SS26 (9 spreads)</span>
+    <span>補足 B — Service Showcase (6 brands)</span>
+    <span>Appendix — 参照資料・出典</span>
+  </div>
+</div>
 
----
+<div class="chapter-break"></div>
 
-## 目次
 
-- [00. Cover Letter — ご挨拶とご相談の素案について](#00-cover-letter)
-- [01. Executive Summary — 2ページ構想](#01-executive-summary)
-- [02. Market 3C Analysis — 市場・競合・当社](#02-market-3c-analysis)
-- [03. Opportunity Landscape — 機会分析](#03-opportunity-landscape)
-- [04. Proposed Structure — 組織構造と役割](#04-proposed-structure)
-- [05. Service Portfolio Roadmap — サービス拡大計画](#05-service-portfolio-roadmap)
-- [06. Phased Roadmap — フェーズ別計画](#06-phased-roadmap)
-- [07. Immediate Actions — 初回対話で議論したいこと](#07-immediate-actions)
-- 補足ギャラリー A: LUMINA Lookbook SS26 (9 spreads)
-- 補足ギャラリー B: Service Showcase (6 brands)
-- Appendix: 参照資料・出典
+<a name="sec-executive-summary"></a>
 
-**図の索引**: 本書に含まれる Mermaid/HTML/画像の総インデックスは [`assets/visual-index.md`](assets/visual-index.md) をご参照ください。
-
----
-
-## 本ドキュメントの位置づけ
-
-これは **提案書ではなく、一緒にやりたいことの素案** です。
-
-- 渡辺様のご時間を最優先に設計しております(初回 30 分、以降 月60分以内)
-- 金銭条件の交渉は本ドキュメントの目的ではありません
-- 組織形態・名称・数字はすべて **たたき台** であり、渡辺様のご判断で再設計する前提
-
-**ご依頼**: Google Meet で 30 分のお時間をいただけないでしょうか。
-URL: https://calendar.app.google/4EPiRfG5wYjJfn4J6
-
----
-
----
-
-<a name="00-cover-letter"></a>
-
-# 00. Cover Letter
-
-渡辺様
-
-突然のご連絡で失礼いたします。
-私は株式会社TomorrowProofでAI × ファッションの事業を準備しております、KOZUKI TAKAHIRO(コウヅキ タカヒロ)と申します。ファッションディレクターとしてのキャリアをベースに、ここ数年は生成AIを用いたビジュアル制作・モデル生成の領域に取り組んでおります。
-
-まずは、私の構想しているAIモデル「LUCAS MORI」のキャラクター設計にあたり、BEDWIN & THE HEARTBREAKERS およびその創業者としての渡辺様の世界観を大きなインスピレーションとさせていただいたこと、改めて御礼を申し上げます。創業者である渡辺様が築かれた、**ストリートのリアリティとクラフトマンシップが同居する美学** — この温度感を再現したいと思いながら仕様を詰めてきました。名前を使わせていただく以上、筋を通すべきだと考え、まず一度ご挨拶のお時間をいただきたくご連絡を差し上げました。
-
-このドキュメントは、提案というよりは **「こんなことが一緒にできるかもしれない、という素案」** としてお読みいただけたら幸いです。
-
-- AIモデルエージェンシーというカテゴリが、2026年に入って世界的に立ち上がりつつあります(H&Mデジタルツイン、Mango AIキャンペーン、Levi's × Lalaland等)
-- 日本では同領域の立ち上がりが遅れており、ここに **「伝統モデルエージェンシーの信用 × AI技術」 のハイブリッド** という空白があるように思います
-- Wizard Models 様が長年培われた業界との信頼関係と、私が整えてきたAI技術・IP設計・運営ツールを組み合わせたら、どんな事業が描けるだろうか — というのが、このドキュメントの主旨です
-
-**金銭的な条件交渉を前提としたご相談ではありません。** 私の立場としては、技術・時間・運営を持ち込み、渡辺様の信用と美学の延長で事業を形にしたい、というのが本心です。事業がきちんと立ち上がれば、報酬の設計は自然と整うものと考えております。
-
-お願いしたいのは、以下の一点のみです。
-
-**30分ほど、対話のお時間をいただけないでしょうか。**
-
-私の構想を一方的にご説明するのではなく、渡辺様が AI というテクノロジーと今後どう関わっていきたいか、もしくは「こういうことならやりたい」というご意向があれば、それを伺いたいと考えております。その上で、ご一緒できる余地があるかどうか、率直にご判断いただければ幸いです。
-
-**オンラインMTG候補URL (Google Meet):** https://calendar.app.google/4EPiRfG5wYjJfn4J6
-
-お忙しいところ恐縮ですが、ご検討いただけますと幸いです。
-本ドキュメント一式は、対話の前の論点整理として、ご一読いただければ十分です。
-
-何卒よろしくお願い申し上げます。
-
----
-
-<a name="01-executive-summary"></a>
-
-# 01. Executive Summary — AI × 伝統モデルエージェンシーという空白
+# Executive Summary — AI × 伝統モデルエージェンシーという空白
 
 ## 背景 — カテゴリは 2026 年に立ち上がった
 
@@ -151,20 +132,21 @@ quadrantChart
 - 初期はクリエイティブ生成委託・HP制作・AI キャンペーン等を幅広く受注し、サービスの幅を持ちながら立ち上げる
 - BEDWIN でのAIモデル活用や、他ブランドとの共創も、事業が走り出す中で自然に組み込む
 
-## 私(KOZUKI)の姿勢 — giver として入ります
+## 私(KOZUKI)の姿勢
 
-事業立ち上げの **実費(サーバー・API・制作費等)** を除き、**固定報酬は設けない前提** でお考えください。
+報酬の交渉を前提にご相談しているわけではありません。
 
-- 私は技術と時間を提供します
-- 事業が立ち上がり、キャッシュが回るようになってから、**事業運営コストに業務委託として必要分を乗せる** 形で、自然に整える姿勢です
-- 金銭条件より、**「この事業を渡辺様と立ち上げる」こと自体に価値がある** と考えております
-- 具体的な数字の設計は、事業の初期成果が出た段階で改めてご相談させてください
+私が持ち込めるのは、ここまで形にしてきた技術・素材・運営面の時間です。
+事業がしっかり立ち上がってから、運営コストに業務委託として必要分を乗せる形で整理できれば十分だと考えています。
+
+金額や条件より、**「この事業を渡辺様とご一緒に形にする」こと自体**に意味を感じています。
+具体的な設計は、最初の成果が出た段階で改めて擦り合わせさせてください。
 
 ---
 
-<a name="02-market-3c-analysis"></a>
+<a name="sec-market-3c-analysis"></a>
 
-# 02. Market 3C Analysis — Customer / Competitor / Company
+# Market 3C Analysis — Customer / Competitor / Company
 
 ## 1. Customer — 誰の、どの痛みに応えるか
 
@@ -270,9 +252,9 @@ quadrantChart
 
 ---
 
-<a name="03-opportunity-landscape"></a>
+<a name="sec-opportunity-landscape"></a>
 
-# 03. Opportunity Landscape — なぜ今、なぜ日本発で海外を狙えるか
+# Opportunity Landscape — なぜ今、なぜ日本発で海外を狙えるか
 
 ## 1. 日本のファッションEC市場
 
@@ -367,9 +349,9 @@ timeline
 
 ---
 
-<a name="04-proposed-structure"></a>
+<a name="sec-proposed-structure"></a>
 
-# 04. Proposed Structure — 組織構造と役割の素案
+# Proposed Structure — 組織構造と役割の素案
 
 ## 1. 組織の位置づけ(3案)
 
@@ -565,7 +547,7 @@ flowchart LR
 ## 6. 収益・報酬設計(たたき台、曖昧に)
 
 ### 基本姿勢
-KOZUKI は giver として入ります。
+固定の報酬を先に決める形ではなく、事業の立ち上がりに合わせて整えていく前提でお考えください。
 
 - 固定月額報酬は **初期0ベース**
 - 事業運営に必要な **実費(サーバー/API/制作費/外部ツール)** のみ先に整理
@@ -596,9 +578,9 @@ KOZUKI は giver として入ります。
 
 ---
 
-<a name="05-service-portfolio-roadmap"></a>
+<a name="sec-service-portfolio-roadmap"></a>
 
-# 05. Service Portfolio Roadmap — サービス拡大の素案
+# Service Portfolio Roadmap — サービス拡大の素案
 
 ## 構成思想
 
@@ -673,9 +655,9 @@ KOZUKI は giver として入ります。
 
 ---
 
-<a name="06-phased-roadmap"></a>
+<a name="sec-phased-roadmap"></a>
 
-# 06. Phased Roadmap — フェーズ別計画(素案)
+# Phased Roadmap — フェーズ別計画(素案)
 
 > 図 M14: Phased Roadmap 全体 Gantt
 
@@ -812,9 +794,9 @@ flowchart TD
 
 ---
 
-<a name="07-immediate-actions"></a>
+<a name="sec-immediate-actions"></a>
 
-# 07. Immediate Actions — 初回対話で議論したいこと
+# Immediate Actions — 初回対話で議論したいこと
 
 ## 初回対話の目的
 
